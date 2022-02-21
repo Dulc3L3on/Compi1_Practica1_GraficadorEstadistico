@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="preloaded_fonts" translatable="false">
+        <item>@font/anonymous_pro_bold</item>
+        <item>@font/candal</item>
+        <item>@font/gayathri_bold</item>
+        <item>@font/lilita_one</item>
+        <item>@font/montserrat_alter_bold</item>
+        <item>@font/montserrat_alternates_bold</item>
+        <item>@font/poppins_bold</item>
+        <item>@font/poppins_medium</item>
+        <item>@font/titan_one</item>
+    </array>
+</resources>

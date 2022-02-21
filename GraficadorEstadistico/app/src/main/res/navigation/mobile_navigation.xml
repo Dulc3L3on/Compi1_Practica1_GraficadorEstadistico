@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_graficadora">
+
+    <!--aquí es donde se asigna el ID a los respectivos fragment, y los ID son utilizados en el activity_main_drawer...-->
+    <fragment
+        android:id="@+id/nav_graficadora"
+        android:name="com.example.graficadorestadistico.ui.Graficadora.PrincipalFragment"
+        android:label="Graficadora"
+        tools:layout="@layout/fragment_principal" />
+
+    <!--era el gallery-->
+    <fragment
+        android:id="@+id/nav_manual"
+        android:name="com.example.graficadorestadistico.ui.ManualUso.ManualUsoFragment"
+        android:label="Manual"
+        tools:layout="@layout/fragment_manual_uso" />
+
+    <!--era el slideshow-->
+    <fragment
+        android:id="@+id/nav_resultados"
+        android:name="com.example.graficadorestadistico.ui.Resultados.ResultadosFragment"
+        android:label="Reportes"
+        tools:layout="@layout/fragment_resultados" />
+
+
+    <fragment
+        android:id="@+id/logFragment"
+        android:name="com.example.graficadorestadistico.ui.Log.LogFragment"
+        android:label="fragment_log"
+        tools:layout="@layout/fragment_log" />
+</navigation>

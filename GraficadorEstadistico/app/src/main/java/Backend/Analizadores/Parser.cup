@@ -1,0 +1,137 @@
+//package e imports
+package Backend.Analizadores;
+
+import java_cup.runtime.*;
+import Backend.Manejadores.ManejadorGraficacion;
+import Backend.Manejadores.ManejadorReportes;
+import Backend.Analizadores.AnalizadorSemantico;
+import Backend.Manejadores.ManejadorErroresExtra;
+
+//1. user code
+class Parser;
+
+action code{://no se si al colocar aquí el método para inicializar y obtener los analizadores, podré acceder a ellos desde el proyecto... colócalo xD y si no, ya sabbes que en el parse code si lo permite xD
+    ManejadorGraficacion manejadorGraficacion;
+    ManejadorReportes manejadorReportes;
+    AnalizadorSemantico analizadorSemantico;//En caso de que no permita, quizá si lo haga si colocas a estos manejadores en el parser code... como es la clase global xD, bueno auqnue de ser así entonces el getter tb tendría que estar allá xD
+    
+    public void inicializarManejadores(ManejadorErroresExtra manejadorErroresExtra, ManejadorReportes manejadorReportes){//Estos vienen del Lexer, por lo tanto podrías solo crear un getter si es que guardas estos en una var del proy previo a enviarla aquí o si no crea un getter para esas 2 aquí tb xD
+        manejadorGraficacion = new ManejadorGraficacion(manejadorErroresExtra);
+        this.manejadorReportes = manejadorReportes;
+        analizadorSemantico = manejadorErroresExtra.getAnalizadorSemantico();
+    }
+
+    //en realidad no debe haber un getter para el analizadorSem porque lo puedes obtener a través de la clase ErroresExtra y a esa puedes acceder desde el proyecto xD
+
+:}
+
+parser code {://código que modifica el comportamiento del parser [sobreescribiendo o creado métodos]
+    
+
+    public Parser(Lexer lexer){//nuevo constructor
+        super(lexer);        
+    }
+
+    
+    protected int error_sync_size(){
+        return 1;
+    }//par que establezca que con un token bien leido basta para recuperarse...
+:}
+
+//2. terminales
+terminal NUMERO, CADENA;
+terminal SUMA, RESTA, MULTI, DIV, MENOS;
+terminal PUNTO_COMA, LLAVE_A, LLAVE_C, DOS_PUNTOS, COMA, PARENTESIS_A, PARENTESIS_C, CORCHETE_A, CORCHETE_C;
+terminal DEF, BARRAS, PIE, TITULO, EJEX, EJEY, ETIQUETAS, VALORES, UNIR, TIPO, TOTAL, CANTIDAD, PORCENTAJE, EXTRA, EJECUTAR;
+
+//3. no terminales
+non terminal inicio;
+non terminal primerseccion, definicion, grafico;
+non terminal cuerpoBarra, paramBarra, atribGeneral, tupla, atribBarra, cuerpoPie, paramPie, atribPie, elTipo;
+non terminal listaCadenas, listaNumeros, valNumerico;
+non terminal segundaSeccion, exe;
+
+//3.1 precedencia y asociatividad
+precedence left SUMA, RESTA;//basado en la docu xD
+precedence left MULTI, DIV;
+precedence left MENOS;
+
+//4. Reglas de producción
+start with inicio;
+
+inicio ::= primerseccion segundaSeccion
+        ;
+
+primerseccion ::= primerseccion definicion
+                | definicion
+                ;
+
+definicion ::= DEF grafico
+            ;
+
+grafico ::= BARRAS LLAVE_A cuerpoBarra LLAVE_C
+         |  PIE LLAVE_A cuerpoPie LLAVE_C
+         ;
+
+cuerpoBarra ::= paramBarra paramBarra paramBarra paramBarra
+             ;
+
+paramBarra ::= atribBarra PUNTO_COMA
+            ;
+
+atribGeneral ::= TITULO DOS_PUNTOS CADENA
+              |  UNIR DOS_PUNTOS CORCHETE_A tupla CORCHETE_C
+              ;
+
+tupla ::= tupla COMA LLAVE_A valNumerico COMA valNumerico LLAVE_C
+       |  LLAVE_A valNumerico COMA valNumerico LLAVE_C
+       ;
+
+atribBarra ::= atribGeneral
+            |  EJEX DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C
+            |  EJEY DOS_PUNTOS CORCHETE_A listaNumeros CORCHETE_C
+            ;
+
+cuerpoPie ::= paramPie paramPie paramPie paramPie paramPie paramPie
+           |  paramPie paramPie paramPie paramPie paramPie paramPie paramPie
+           ;
+
+paramPie ::= atribPie PUNTO_COMA
+          ;
+
+atribPie ::= atribGeneral
+          |  ETIQUETAS DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C
+          |  VALORES DOS_PUNTOS CORCHETE_A listaNumeros CORCHETE_C
+          |  EXTRA DOS_PUNTOS CADENA
+          |  TIPO DOS_PUNTOS elTipo
+          |  TOTAL DOS_PUNTOS valNumerico
+          ;
+
+elTipo ::= CANTIDAD
+        |  PORCENTAJE
+        ;
+
+listaCadenas ::= listaCadenas COMA CADENA
+              |  CADENA
+              ;
+
+listaNumeros ::= listaNumeros COMA valNumerico
+              |  valNumerico
+              ;
+
+valNumerico ::= valNumerico SUMA valNumerico                        {:/*result; establecimientoReporteOperaciones*/:}
+             |  valNumerico RESTA valNumerico                       {:/*result; establecimientoReporteOperaciones*/:}
+             |  valNumerico MULTI valNumerico                       {:/*result; establecimientoReporteOperaciones*/:}
+             |  valNumerico DIV valNumerico                         {:/*result; establecimientoReporteOperaciones*/:}
+             |  NUMERO                                              {:/*result*/:}
+             |  RESTA valNumerico                                   {:/*result; establecimientoReporteOperaciones*/:}//En este caso solo se concat el right, por ser negación...
+             %prec MENOS                                            
+             |  PARENTESIS_A valNumerico PARENTESIS_C               {:/*result*/:}            
+             ;
+
+segundaSeccion ::= segundaSeccion exe
+                |  exe
+                ;
+
+exe ::= EJECUTAR PARENTESIS_A CADENA PARENTESIS_C PUNTO_COMA
+     ;
