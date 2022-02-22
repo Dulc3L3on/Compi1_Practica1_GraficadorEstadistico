@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/nav_graficadora">
+    app:startDestination="@+id/nav_contenedor">
 
     <!--aquí es donde se asigna el ID a los respectivos fragment, y los ID son utilizados en el activity_main_drawer...-->
     <fragment
@@ -21,15 +21,20 @@
 
     <!--era el slideshow-->
     <fragment
-        android:id="@+id/nav_resultados"
-        android:name="com.example.graficadorestadistico.ui.Resultados.ResultadosFragment"
+        android:id="@+id/nav_contenedor"
+        android:name="com.example.graficadorestadistico.ui.Contenedor.ContenedorFragment"
         android:label="Reportes"
-        tools:layout="@layout/fragment_resultados" />
+        tools:layout="@layout/fragment_contenedor" />
 
 
     <fragment
-        android:id="@+id/logFragment"
-        android:name="com.example.graficadorestadistico.ui.Log.LogFragment"
+        android:id="@+id/nav_reportesFragment"
+        android:name="com.example.graficadorestadistico.ui.Reportes.ReportesFragment"
         android:label="fragment_log"
-        tools:layout="@layout/fragment_log" />
+        tools:layout="@layout/fragment_reportes" />
+    <fragment
+        android:id="@+id/nav_resultado"
+        android:name="com.example.graficadorestadistico.ui.Resultados.ResultadoFragment"
+        android:label="fragment_resultado"
+        tools:layout="@layout/fragment_resultado" />
 </navigation>

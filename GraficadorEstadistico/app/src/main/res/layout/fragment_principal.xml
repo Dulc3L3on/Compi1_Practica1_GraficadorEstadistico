@@ -7,29 +7,12 @@
     android:background="#DDD8E5"
     tools:context=".ui.Graficadora.PrincipalFragment">
 
-    <TextView
-        android:id="@+id/tvw_text_Input"
-        android:layout_width="329dp"
-        android:layout_height="489dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/shadow"
-        android:elevation="10dp"
-        android:inputType="textMultiLine"
-        android:padding="10dp"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.481"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.427" />
 
     <Button
         android:id="@+id/btn_graficar"
         android:layout_width="168dp"
         android:layout_height="57dp"
+        android:layout_marginBottom="28dp"
         android:background="#FACA82"
         android:elevation="10dp"
         android:fontFamily="@font/poppins_bold"
@@ -44,10 +27,12 @@
 
     <EditText
         android:id="@+id/txt_input"
-        android:layout_width="305dp"
-        android:layout_height="463dp"
+        android:layout_width="325dp"
+        android:layout_height="491dp"
+        android:background="@drawable/shadow"
         android:ems="10"
         android:gravity="start|top"
+        android:padding="10dp"
         android:inputType="textMultiLine"
         android:text="Escribe aquí las definiciones"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -60,15 +45,17 @@
         android:id="@+id/tvw_titulo"
         android:layout_width="338dp"
         android:layout_height="37dp"
+        android:layout_marginTop="44dp"
         android:background="#0090CAF9"
         android:fontFamily="@font/poppins_bold"
         android:text="Graficador Estadístico"
         android:textAlignment="center"
-        android:textColor="@color/cardview_dark_background"
 
+        android:textColor="@color/cardview_dark_background"
         android:textSize="25dp"
         app:layout_constraintBottom_toTopOf="@+id/tvw_text_Input"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

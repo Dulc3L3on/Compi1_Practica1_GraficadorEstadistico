@@ -10,6 +10,10 @@
             android:icon="@drawable/vector_manual"
             android:title="Manual de uso" /><!--aquí estaba el @string/menu_gallery-->
         <item
+            android:id="@+id/nav_contenedor"
+            android:icon="@drawable/vector_chart"
+            android:title="Graficadora" /><!--aquí estaba el @string/menu_home-->
+        <item
             android:id="@+id/nav_graficadora"
             android:icon="@drawable/vector_chart"
             android:title="Graficadora" /><!--aquí estaba el @string/menu_home-->

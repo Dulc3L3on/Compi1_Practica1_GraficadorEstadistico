@@ -1,4 +1,4 @@
-package com.example.graficadorestadistico.ui.Resultados
+package com.example.graficadorestadistico.ui.Contenedor
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

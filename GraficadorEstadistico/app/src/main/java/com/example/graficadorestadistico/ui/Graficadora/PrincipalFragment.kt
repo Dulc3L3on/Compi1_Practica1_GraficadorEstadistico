@@ -8,8 +8,10 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.graficadorestadistico.databinding.FragmentPrincipalBinding
+import com.example.graficadorestadistico.ui.Contenedor.ContenedorFragment
 
 class PrincipalFragment : Fragment() {
+    private lateinit var contenedorFragments: ContenedorFragment
 
     private var _binding: FragmentPrincipalBinding? = null
 
@@ -28,15 +30,15 @@ class PrincipalFragment : Fragment() {
         _binding = FragmentPrincipalBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.tvwTextInput //aquí decía textHome cuál habrá sido?...
-        homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
         return root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    fun setContenedorFragments(contenedorFragments:ContenedorFragment){
+        this.contenedorFragments = contenedorFragments
     }
 }
