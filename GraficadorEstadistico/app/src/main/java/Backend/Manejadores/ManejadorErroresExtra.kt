@@ -28,12 +28,16 @@ class ManejadorErroresExtra(manejadorReportes: ManejadorReportes){
             (if (irreconocida) ReporteError.LEXER_INVALID_WORD else ReporteError.LEXER_MAYBE_YOU_MEANT + "item")))
     }
 
-    //si es que Android no admite graficar barras (-) y el contenido solo es de dígitos
-    fun detectarSiEsNumeroNegativo(){
+    fun verificarConsistenciaDeAtributos(){
+        this.analizadorSemantico.verificarAtributos()
+    }
 
+    fun hubieronErrores():Boolean{
+        return this.analizadorSemantico.hubieronErrores()
     }
 
     fun getAnalizadorSemantico():AnalizadorSemantico{
+        analizadorSemantico.setManejadorReportes(this.manejadorReportes)//ya no es necesario hacerlo afuerita [es decir donde se invoca a los analizadores]
         return this.analizadorSemantico
     }
 }

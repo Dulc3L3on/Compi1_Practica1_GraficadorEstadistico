@@ -17,10 +17,10 @@ import com.example.graficadorestadistico.ui.Reportes.ReportesFragment
 import com.example.graficadorestadistico.ui.Adapter.PagerAdapter
 import com.example.graficadorestadistico.ui.ManualUso.ManualUsoFragment
 import com.example.graficadorestadistico.ui.Resultados.ResultadoFragment
+import com.example.graficadorestadistico.ui.Resultados.ResultadosFragment
 import com.google.android.material.tabs.TabLayout
 
 class ContenedorFragment(): Fragment() {
-    //private val graficas:ArrayList<Grafica> = graficas
     private lateinit var fragments:ArrayList<Fragment>
     private lateinit var titulos:ArrayList<String>
     private var inicializado:Boolean = false
@@ -36,11 +36,15 @@ class ContenedorFragment(): Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+    
+    override fun onCreate(savedInstanceState: Bundle?){
+        super.onCreate(savedInstanceState)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View {
         val slideshowViewModel =
-            ViewModelProvider(this).get(ResultadosViewModel::class.java)
+            ViewModelProvider(this).get(ContenedorViewModel::class.java)
 
         _binding = FragmentContenedorBinding.inflate(inflater, container, false)
         val root: View = binding.root
@@ -58,7 +62,7 @@ class ContenedorFragment(): Fragment() {
         viewPager.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabs))
         tabs.setOnTabSelectedListener(object: TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
-                viewPager.setCurrentItem(tab!!.getPosition());
+                viewPager.currentItem = tab!!.position;
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
@@ -81,6 +85,8 @@ class ContenedorFragment(): Fragment() {
         //setear la tab de PrincipalFragment adapter!!.setTab(PrincipalFragment() as Fragment, "Graficadora")
         //Agregar el adapter en el viewPager:  this.viewPager!!.adapter = this.adapter
 
+
+        //de alguna no jala las tabs si las clases de los fragment, tienen algo más que no sea el OnCreate y el OnCreateView... lo digo por lo que sucedió con resultado... [que al crear una clase que no tuviera los parámetros para tener el método static de createInstance, ahí si me jalo la app...
             tabs.addTab(tabs.newTab().setIcon(R.drawable.ic_menu_gallery).setText("Graficadora"))
             tabs.addTab(tabs.newTab().setIcon(R.drawable.ic_menu_gallery).setText("Graficas"))
             tabs.addTab(tabs.newTab().setIcon(R.drawable.ic_menu_gallery).setText("Resumen"))
@@ -88,9 +94,9 @@ class ContenedorFragment(): Fragment() {
 
             adapter = PagerAdapter(requireActivity().supportFragmentManager)
             adapter.setTab(PrincipalFragment() as Fragment, "Graficadora")
-            adapter.setTab(ManualUsoFragment() as Fragment, "Graficas")
-            adapter.setTab(PrincipalFragment() as Fragment, "Graficadora")
-            adapter.setTab(PrincipalFragment() as Fragment, "Graficadora")
+            adapter.setTab(ResultadosFragment() as Fragment, "Graficas")
+            adapter.setTab(ReportesFragment() as Fragment, "Resumen")
+            adapter.setTab(ReportesFragment() as Fragment, "Errores")
 
 //        this.principalFragment = PrincipalFragment()
 
@@ -107,7 +113,7 @@ class ContenedorFragment(): Fragment() {
 
         this.adapter!!.resetList()
         this.adapter!!.setTab(this.principalFragment as Fragment, "Graficadora")
-        this.adapter!!.setTab( ReportesFragment(null, errores) as Fragment, "Errores")
+        this.adapter!!.setTab( ReportesFragment() as Fragment, "Errores")
     }
 
     fun setTabsResultado(graficas:ArrayList<Grafica>, resultados:ArrayList<Reporte>){//quizá podríamos add un parám que que especifique el tipo de pestañas que se debe enviar... así se envía una lista nueva y por lo tanto no habrá problemas con el manejo de instancias... [quiere decir que de aquí se tendrían que obtner las instancias para que se muestre lo que se debe
@@ -119,7 +125,7 @@ class ContenedorFragment(): Fragment() {
         this.adapter!!.resetList()
         this.adapter!!.setTab(this.principalFragment as Fragment, "Graficadora")
         this.adapter!!.setTab(ContenedorFragment() as Fragment, "Graficas")
-        this.adapter!!.setTab( ReportesFragment(resultados, null) as Fragment, "Resumen")
+        this.adapter!!.setTab( ReportesFragment() as Fragment, "Resumen")
     }
 
     private fun deleteTabs(){

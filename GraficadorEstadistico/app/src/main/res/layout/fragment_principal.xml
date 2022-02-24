@@ -22,7 +22,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvw_text_Input"
         app:layout_constraintVertical_bias="0.519" />
 
     <EditText
@@ -53,7 +52,6 @@
 
         android:textColor="@color/cardview_dark_background"
         android:textSize="25dp"
-        app:layout_constraintBottom_toTopOf="@+id/tvw_text_Input"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"

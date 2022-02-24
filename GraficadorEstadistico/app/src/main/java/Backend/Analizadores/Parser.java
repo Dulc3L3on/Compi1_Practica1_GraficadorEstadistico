@@ -250,9 +250,9 @@ class CUP$Parser$actions {
     AnalizadorSemantico analizadorSemantico;//En caso de que no permita, quizá si lo haga si colocas a estos manejadores en el parser code... como es la clase global xD, bueno auqnue de ser así entonces el getter tb tendría que estar allá xD
     
     public void inicializarManejadores(ManejadorErroresExtra manejadorErroresExtra, ManejadorReportes manejadorReportes){//Estos vienen del Lexer, por lo tanto podrías solo crear un getter si es que guardas estos en una var del proy previo a enviarla aquí o si no crea un getter para esas 2 aquí tb xD
-        manejadorGraficacion = new ManejadorGraficacion(manejadorErroresExtra);
-        this.manejadorReportes = manejadorReportes;
-        analizadorSemantico = manejadorErroresExtra.getAnalizadorSemantico();
+      analizadorSemantico = manejadorErroresExtra.getAnalizadorSemantico();
+      manejadorGraficacion = new ManejadorGraficacion(manejadorErroresExtra);
+      this.manejadorReportes = manejadorReportes;
     }
 
     //en realidad no debe haber un getter para el analizadorSem porque lo puedes obtener a través de la clase ErroresExtra y a esa puedes acceder desde el proyecto xD

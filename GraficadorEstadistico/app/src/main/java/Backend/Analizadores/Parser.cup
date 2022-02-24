@@ -14,12 +14,27 @@ action code{://no se si al colocar aquí el método para inicializar y obtener l
     ManejadorGraficacion manejadorGraficacion;
     ManejadorReportes manejadorReportes;
     AnalizadorSemantico analizadorSemantico;//En caso de que no permita, quizá si lo haga si colocas a estos manejadores en el parser code... como es la clase global xD, bueno auqnue de ser así entonces el getter tb tendría que estar allá xD
+
+    private int filaContenido = 0, columnaContenido = 0;//esto será útil para el contenido que sea una cadena...
+    private ArrayList<String> listaCadenas = new ArrayList();
+    private ArrayList<double> listaNumeros = new ArrayList();
     
+    //aún no sé si será accesible desde el proyecto...
     public void inicializarManejadores(ManejadorErroresExtra manejadorErroresExtra, ManejadorReportes manejadorReportes){//Estos vienen del Lexer, por lo tanto podrías solo crear un getter si es que guardas estos en una var del proy previo a enviarla aquí o si no crea un getter para esas 2 aquí tb xD
+        analizadorSemantico = manejadorErroresExtra.getAnalizadorSemantico();    
         manejadorGraficacion = new ManejadorGraficacion(manejadorErroresExtra);
-        this.manejadorReportes = manejadorReportes;
-        analizadorSemantico = manejadorErroresExtra.getAnalizadorSemantico();
+        this.manejadorReportes = manejadorReportes;        
     }
+
+    private void resetInfo_Listas(String tipoLista){
+        if(tipoLista.equals("cadenas")){
+            listaCadenas.clear();            
+        }else{
+            listaNumeros.clear();
+            filaContenido = columnaContenido = 0;
+        }
+    }
+
 
     //en realidad no debe haber un getter para el analizadorSem porque lo puedes obtener a través de la clase ErroresExtra y a esa puedes acceder desde el proyecto xD
 
@@ -67,36 +82,47 @@ primerseccion ::= primerseccion definicion
                 ;
 
 definicion ::= DEF grafico
+            /*E -> faltó instrucción Def/def*/
             ;
 
 grafico ::= BARRAS LLAVE_A cuerpoBarra LLAVE_C
          |  PIE LLAVE_A cuerpoPie LLAVE_C
+         /*estructura de definición inválida*/
          ;
 
 cuerpoBarra ::= paramBarra paramBarra paramBarra paramBarra
+             /*E -> Para gráfico de barras se esperba 4 atributos*/
              ;
 
 paramBarra ::= atribBarra PUNTO_COMA
+            /*E -> falta ";"*//*lo de "se esperaba tal estructura no, a menos que no se pueda definir el error en la RP de atribGraficaCorresp*/
             ;
 
 atribGeneral ::= TITULO DOS_PUNTOS CADENA
               |  UNIR DOS_PUNTOS CORCHETE_A tupla CORCHETE_C
+              /*E -> atributo de gráfica malformado*/
+              /*Ó -> se esperaba "atributo : contenido"*//*si escoges esto sería bueno que incluyeras tb lo de arriba, por los demás tipos de atrib...*/
               ;
 
 tupla ::= tupla COMA LLAVE_A valNumerico COMA valNumerico LLAVE_C
        |  LLAVE_A valNumerico COMA valNumerico LLAVE_C
+       /*se esperaba una tupla: { # , # }*/
        ;
 
 atribBarra ::= atribGeneral
             |  EJEX DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C
             |  EJEY DOS_PUNTOS CORCHETE_A listaNumeros CORCHETE_C
+            /*E -> atributo de Barras malformado*/
             ;
 
 cuerpoPie ::= paramPie paramPie paramPie paramPie paramPie paramPie
            |  paramPie paramPie paramPie paramPie paramPie paramPie paramPie
+           /*E -> se esperaban 6 o 7 atributos*/
+           /*o más específico -> Gráfico de Pie requiere de 6 o 7 atributos*/
            ;
 
-paramPie ::= atribPie PUNTO_COMA
+paramPie ::= atribPie PUNTO_COMA        
+          /*E -> falta ";" [porque lo de atributo malformado se informaría en las producciones de abajo*/
           ;
 
 atribPie ::= atribGeneral
@@ -105,18 +131,29 @@ atribPie ::= atribGeneral
           |  EXTRA DOS_PUNTOS CADENA
           |  TIPO DOS_PUNTOS elTipo
           |  TOTAL DOS_PUNTOS valNumerico
+          /*se esperaba un atributo eti, vals, ex, tipo, tot... o quizá pueda formarse a partir del id del T en el que se hayó un error
+            quizá pueda decir error en T se esperaba...
+            E -> estructura de atributo incorreca  
+            [atributo malformado por T]
+            E -> atributo de Pie malformado*/
           ;
 
 elTipo ::= CANTIDAD
         |  PORCENTAJE
+        /*E -> tipo de total inválido */
+        /*[se esperaba cantidad o porcentaje]*/
         ;
 
 listaCadenas ::= listaCadenas COMA CADENA
               |  CADENA
+              /*formato de lista de cadenas inválido*/
+              /*se esperaba una lista de 1 o más cadenas*/              
               ;
 
 listaNumeros ::= listaNumeros COMA valNumerico
               |  valNumerico
+              /*formato de lista de valores numéricos inválido*/
+              /*se esperaba una lista de 1 o más números*/  
               ;
 
 valNumerico ::= valNumerico SUMA valNumerico                        {:/*result; establecimientoReporteOperaciones*/:}
@@ -126,7 +163,10 @@ valNumerico ::= valNumerico SUMA valNumerico                        {:/*result; 
              |  NUMERO                                              {:/*result*/:}
              |  RESTA valNumerico                                   {:/*result; establecimientoReporteOperaciones*/:}//En este caso solo se concat el right, por ser negación...
              %prec MENOS                                            
-             |  PARENTESIS_A valNumerico PARENTESIS_C               {:/*result*/:}            
+             |  PARENTESIS_A valNumerico PARENTESIS_C               {:/*result*/:}   
+             /*E -> operacion aritmética incorrecta : T*/           {::}//y si no se llegara a exe la axn del padre [list#] entonces yo diría que habría que resetear en la nueva prod que solo invocaría a listado_# o cadenas para permitirme esa axn xD o en todo caso sería en iba a decir donde está la...
+             //OJO: ahh si, podría ser donde se declaran los parámetros xD [en axn error y axn normal xD]
+             /*E -> formato de operación aritmética inválido*/        
              ;
 
 segundaSeccion ::= segundaSeccion exe
@@ -134,4 +174,5 @@ segundaSeccion ::= segundaSeccion exe
                 ;
 
 exe ::= EJECUTAR PARENTESIS_A CADENA PARENTESIS_C PUNTO_COMA
+    /*se esperaba una estructa de ejecución [y el formato]*/
      ;
