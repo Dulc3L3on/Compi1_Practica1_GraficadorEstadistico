@@ -380,10 +380,6 @@ public class Lexer implements java_cup.runtime.Scanner {
         yybegin(YYINITIAL);
     }
 
-    public ManejadorReportes getManejadorReportes(){
-        return manejadorReportes;
-    }
-
     public ManejadorErroresExtra getManejadorErroresExtra(){
         return manejadorErroresExtra;
     }
@@ -820,7 +816,7 @@ public class Lexer implements java_cup.runtime.Scanner {
             // fall through
           case 34: break;
           case 6:
-            { return symbol(NUMERO, new Integer(yytext()), false);
+            { return symbol(NUMERO, new Double(yytext()), false);
             }
             // fall through
           case 35: break;

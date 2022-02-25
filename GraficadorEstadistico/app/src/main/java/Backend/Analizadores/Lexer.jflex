@@ -85,10 +85,6 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
         yybegin(YYINITIAL);
     }
 
-    public ManejadorReportes getManejadorReportes(){
-        return manejadorReportes;
-    }
-
     public ManejadorErroresExtra getManejadorErroresExtra(){
         return manejadorErroresExtra;
     }
@@ -121,7 +117,7 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
 <YYINITIAL>{
     {comentario}           {/*se ignora*/}//No debería hacer match con ninguna palabra reservada porque están declaras antes y de todos modos si apareciera comentada, siempre tendría un #, lo cual haría que entre aquí xD
 
-    {numero}               {return symbol(NUMERO, new Integer(yytext()), false);}//son los signos de operación en sí quienes requieren del anterior
+    {numero}               {return symbol(NUMERO, new Double(yytext()), false);}//son los signos de operación en sí quienes requieren del anterior
 
     {operadores}           {return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?establecerMenosOResta():((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);}
 

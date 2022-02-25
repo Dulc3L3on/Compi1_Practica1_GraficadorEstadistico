@@ -1,14 +1,18 @@
 package Backend.Manejadores
 
 import Backend.Analizadores.AnalizadorSemantico
+import Backend.Objetos.Auxiliares.Atributos.Atributo
+import Backend.Objetos.Auxiliares.Atributos.Contenido.ContenidoCadena
 import Backend.Objetos.Auxiliares.Simbolo
 import Backend.Objetos.Reportes.ReporteError
 import java.lang.Math.ceil
 
 class ManejadorErroresExtra(manejadorReportes: ManejadorReportes){
     private val manejadorReportes = manejadorReportes
-    private var analizadorSemantico:AnalizadorSemantico = AnalizadorSemantico() //para revisar los erroers de los que se encarga [solo llama las funciones aquí]
+    private var analizadorSemantico:AnalizadorSemantico = AnalizadorSemantico(manejadorReportes) //para revisar los erroers de los que se encarga [solo llama las funciones aquí]
+    private var yaSeRegistroInexistenciaSeccion1 = false
 
+    //empleado directamente en el Lexer
     fun detectarReservadadMalFormada(palabraIrreconocida: Simbolo){
         var irreconocida:Boolean = true
 
@@ -28,16 +32,46 @@ class ManejadorErroresExtra(manejadorReportes: ManejadorReportes){
             (if (irreconocida) ReporteError.LEXER_INVALID_WORD else ReporteError.LEXER_MAYBE_YOU_MEANT + "item")))
     }
 
+    //empleado por el ManejadorGraficacion
     fun verificarConsistenciaDeAtributos(){
         this.analizadorSemantico.verificarAtributos()
     }
 
+    //empleado por el ManejadorGraficacion
     fun hubieronErrores():Boolean{
-        return this.analizadorSemantico.hubieronErrores()
+        return this.manejadorReportes.hubieronErrores()
+    }
+
+    //empleado en el ManejadorGraficacion xD
+    fun verificarSeccionEjecucion(tituloGrafica: Atributo):Boolean{
+        if(this.analizadorSemantico.getTitulosRegistrados().isEmpty() && !this.yaSeRegistroInexistenciaSeccion1){//así solo se mostrará un único error xD
+            this.manejadorReportes.reportarError(ReporteError("Sección Ejecución",
+                -1,-1, "Semántico", ReporteError.SEMANTIC_NO_SECTION_GRAPH_DEFINED))
+            this.yaSeRegistroInexistenciaSeccion1 = true
+        }else if(this.analizadorSemantico.getTitulosRegistrados().isNotEmpty()){
+            return verificarExistenciaGrafica(tituloGrafica)
+        }
+        return false
+    }
+
+    private fun verificarExistenciaGrafica(atributoTitulo:Atributo):Boolean{
+        val titulo:ContenidoCadena = atributoTitulo.contenido as ContenidoCadena
+
+        for (tituloRegistrado in this.analizadorSemantico.getTitulosRegistrados()){
+            if(titulo.cadena == tituloRegistrado.cadena){
+                return true
+            }
+        }
+        this.manejadorReportes.reportarError(ReporteError(titulo.cadena,
+            titulo.linea,titulo.columna, "Semántico", ReporteError.SEMANTIC_NO_GRAPH_DEFINED))
+        return false
     }
 
     fun getAnalizadorSemantico():AnalizadorSemantico{
-        analizadorSemantico.setManejadorReportes(this.manejadorReportes)//ya no es necesario hacerlo afuerita [es decir donde se invoca a los analizadores]
         return this.analizadorSemantico
+    }
+
+    fun getManejadorReportes():ManejadorReportes{
+        return this.manejadorReportes
     }
 }

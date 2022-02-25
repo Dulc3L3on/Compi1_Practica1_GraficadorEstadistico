@@ -1,6 +1,6 @@
 package Backend.Objetos.Graficas
 
-class Barras(titulo: String, unir: Array<IntArray>, ejeX:Array<String>, ejeY:DoubleArray) : Grafica(titulo, unir) {
+class Barras(titulo: String, unir: Array<DoubleArray>, ejeX:Array<String>, ejeY:DoubleArray) : Grafica(titulo, unir) {
     var ejeX:Array<String> = ejeX//los dejé como array pensando en que son equivalentes a los arreglos en java [ya que convertiré las listas creadas en el parser a un array...
     var ejeY:DoubleArray = ejeY
 

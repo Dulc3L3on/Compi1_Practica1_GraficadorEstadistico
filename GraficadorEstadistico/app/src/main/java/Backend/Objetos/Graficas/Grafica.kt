@@ -1,10 +1,10 @@
 package Backend.Objetos.Graficas
 
-open class Grafica(titulo:String, unir: Array<IntArray>) {
+open class Grafica(titulo:String, unir: Array<DoubleArray>) {
     val titulo:String = titulo
-    val unir:Array<IntArray> = unir
+    val unir:Array<DoubleArray> = unir
 
-    constructor():this("", Array(0){IntArray(0)}){}//si está difícil acceder a los elementos del arreglo interno, entonces crea un objetoAUxiliar Tupla :v... aunque esparía que fuera muy similar a la manera en que trabaja Java
+    constructor():this("", Array(0){DoubleArray(0)}){}//si está difícil acceder a los elementos del arreglo interno, entonces crea un objetoAUxiliar Tupla :v... aunque esparía que fuera muy similar a la manera en que trabaja Java
 }
 
 //Nota en Java se habíá add implements Serializable para que no hubieran pérdida de datos, pero como es de una clase a otra del mismo proyecto

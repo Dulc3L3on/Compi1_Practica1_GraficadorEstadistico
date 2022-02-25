@@ -28,6 +28,10 @@ class ManejadorReportes {
         }
     }
 
+    fun hubieronErrores():Boolean{
+        return (this.listadoErrores.size>0)
+    }
+
     fun getListaReporteOperaciones():ArrayList<Reporte>{
         return listaReportesOperaciones
     }
@@ -39,5 +43,4 @@ class ManejadorReportes {
     fun getCantidadGraficas():IntArray{//0-> barras, 1-> pie... solo le colocas los corchetes donde lo vayas a invocar y listo xD no tendrás que crear vars extra xD
         return cantidadGraficas
     }
-
 }

@@ -1,6 +1,7 @@
 package Backend.Manejadores
 
 import Backend.Analizadores.AnalizadorSemantico
+import Backend.Objetos.Auxiliares.Atributos.Atributo
 import Backend.Objetos.Auxiliares.Atributos.Contenido.*
 import Backend.Objetos.Auxiliares.Simbolo
 import Backend.Objetos.Graficas.Barras
@@ -9,14 +10,16 @@ import Backend.Objetos.Graficas.Pie
 
 class ManejadorGraficacion(manejadorErroresExtra:ManejadorErroresExtra) {
     private var manejadorErroresExtra:ManejadorErroresExtra = manejadorErroresExtra //para hacer la revisión de si se debe graficar o no... [Entonces solo a este se invocará en el parser...]
-    private var graficas:ArrayList<Grafica> = ArrayList()
     private var analizadorSemantico:AnalizadorSemantico = this.manejadorErroresExtra.getAnalizadorSemantico()
 
-    //esto se exe dentro del parser [en las axn de las RP más generales de la definición de una gráfica B o P]
-    fun analizarParametrosGrafica(tipoGrafica: Simbolo){
-        this.manejadorErroresExtra.getAnalizadorSemantico().setTipoGrafica(tipoGrafica)
+    private var graficasDefinidas:ArrayList<Grafica> = ArrayList()
+    private var listaDeEjecucion:ArrayList<Grafica> = ArrayList()
 
+    //esto se exe dentro del parser [en las axn de las RP más generales de la definición de una gráfica B o P]
+    fun analizarGraficaDefinida(tipoGrafica: Simbolo){
+        this.manejadorErroresExtra.getAnalizadorSemantico().setTipoGrafica(tipoGrafica)
         this.manejadorErroresExtra.verificarConsistenciaDeAtributos()
+
         if(!this.manejadorErroresExtra.hubieronErrores()){
             addGrafica(tipoGrafica.value.toString())
         }
@@ -26,8 +29,8 @@ class ManejadorGraficacion(manejadorErroresExtra:ManejadorErroresExtra) {
         val atributosGraficoBarras = this.analizadorSemantico.getAtributosGraficoBarras()
         val atributosGraficoPie = this.analizadorSemantico.getAtributosGraficoPie()
 
-        if(tipo.equals("Barras")){
-            this.graficas.add(Barras(
+        if(tipo == "Barras"){
+            this.graficasDefinidas.add(Barras(
                 (this.analizadorSemantico.getContenidoDeAtributo("titulo") as ContenidoCadena).cadena,
                 (this.analizadorSemantico.getContenidoDeAtributo("unir") as ContenidoTuplas).tuplas,
                 (this.analizadorSemantico.getContenidoDeAtributo(atributosGraficoBarras[0]) as ContenidoListaCadenas).listaCadenas,
@@ -35,7 +38,7 @@ class ManejadorGraficacion(manejadorErroresExtra:ManejadorErroresExtra) {
         }else{
             val tipoTotal = (this.analizadorSemantico.getContenidoDeAtributo(atributosGraficoPie[3]) as ContenidoCadena).cadena
 
-            this.graficas.add(Pie(
+            this.graficasDefinidas.add(Pie(
                 (this.analizadorSemantico.getContenidoDeAtributo("titulo") as ContenidoCadena).cadena,
                 (this.analizadorSemantico.getContenidoDeAtributo("unir") as ContenidoTuplas).tuplas,
                 (this.analizadorSemantico.getContenidoDeAtributo(atributosGraficoPie[0]) as ContenidoListaCadenas).listaCadenas,
@@ -47,14 +50,33 @@ class ManejadorGraficacion(manejadorErroresExtra:ManejadorErroresExtra) {
         }
     }
 
-    //esto se emplea en el exterior, luego de haber terminado all the analisis, esto permitirá
-    //saber qué se debe bundlear y qué pantallas se deben limpiar...
-    fun getGraficas():ArrayList<Grafica>?{
-        if(!this.manejadorErroresExtra.hubieronErrores()){
-            return this.graficas
+    //para uso interno en analizarExe
+    private fun getGrafica(tituloGrafica:String):Grafica?{
+        for(grafica in this.graficasDefinidas){
+            if(grafica.titulo == tituloGrafica){
+                return grafica
+            }
         }
-        return null
+        return null//aunque nunca se llegará aquí porque siempre que se exe este método será porque existe una gráfica con el título en cuestión
     }
 
+    //se utilizará en la axn de la RP "exe" del parser
+    fun analizarEjecucion(atributoTitulo:Atributo){
+        if(this.manejadorErroresExtra.verificarSeccionEjecucion(atributoTitulo)){
+            this.listaDeEjecucion.add(getGrafica((atributoTitulo.contenido as ContenidoCadena).cadena)!!)//Es un hecho que no será null por la verif que exe el if xD
+        }
+    }
+
+    //esto se emplea en el exterior, luego de haber terminado all the analisis, esto permitirá
+    //saber qué se debe bundlear y qué pantallas se deben limpiar dep de si está o no vacía xD...
+    fun getListaEjecucion():ArrayList<Grafica>{
+        return this.listaDeEjecucion
+    }
+
+    fun getGraficasDefinidas():ArrayList<Grafica>{
+        return this.graficasDefinidas
+    }
     //ya solo falta colocar estos métodos y los de ME_ext, MRep [erroresPosiblesHallarGram y repOps] donde corresponda en el parser uwu y probar xD y las axn aux para concat las listas de # y cadenas p.ej y tb las tuplas xD
+
+
 }

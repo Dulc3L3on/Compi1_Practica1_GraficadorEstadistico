@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
-            setOf(
+            setOf(//Esto hace que las pantallas que estén aquí tengan el btncito para volver a ver el navDrawer y no la flecha para regresar en su lugar xD
                 R.id.nav_manual, R.id.nav_contenedor
             ), drawerLayout//cambie el nav_graficadora por contenedor, bueno mejor dicho nav_resultados xD
         )

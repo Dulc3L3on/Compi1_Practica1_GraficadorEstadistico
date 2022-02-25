@@ -13,9 +13,5 @@
             android:id="@+id/nav_contenedor"
             android:icon="@drawable/vector_chart"
             android:title="Graficadora" /><!--aquí estaba el @string/menu_home-->
-        <item
-            android:id="@+id/nav_graficadora"
-            android:icon="@drawable/vector_chart"
-            android:title="Graficadora" /><!--aquí estaba el @string/menu_home-->
     </group>
 </menu>

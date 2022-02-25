@@ -87,10 +87,10 @@ class ContenedorFragment(): Fragment() {
 
 
         //de alguna no jala las tabs si las clases de los fragment, tienen algo más que no sea el OnCreate y el OnCreateView... lo digo por lo que sucedió con resultado... [que al crear una clase que no tuviera los parámetros para tener el método static de createInstance, ahí si me jalo la app...
-            tabs.addTab(tabs.newTab().setIcon(R.drawable.ic_menu_gallery).setText("Graficadora"))
-            tabs.addTab(tabs.newTab().setIcon(R.drawable.ic_menu_gallery).setText("Graficas"))
-            tabs.addTab(tabs.newTab().setIcon(R.drawable.ic_menu_gallery).setText("Resumen"))
-            tabs.addTab(tabs.newTab().setIcon(R.drawable.ic_menu_gallery).setText("Errores"))
+            tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_chart).setText("Graficadora"))
+            tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_logo).setText("Graficas"))
+            tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_reportes).setText("Resumen"))
+            tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_reportes_error).setText("Errores"))
 
             adapter = PagerAdapter(requireActivity().supportFragmentManager)
             adapter.setTab(PrincipalFragment() as Fragment, "Graficadora")

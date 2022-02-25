@@ -345,7 +345,7 @@ public class Lexer implements java_cup.runtime.Scanner {
         }
 
         requeriaCompania = conCompania;
-
+        return simboloActual;
     }
 
     private Symbol acccionReservada(int tipo){//por el momneot es void xD        
@@ -810,7 +810,7 @@ public class Lexer implements java_cup.runtime.Scanner {
             // fall through
           case 32: break;
           case 4:
-            { return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?establecerNegacionOResta():((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);
+            { return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?establecerMenosOResta():((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);
             }
             // fall through
           case 33: break;
@@ -820,7 +820,7 @@ public class Lexer implements java_cup.runtime.Scanner {
             // fall through
           case 34: break;
           case 6:
-            { return symbol(NUMERO, new Integer(yytext()), false);
+            { return symbol(NUMERO, new Double(yytext()), false);
             }
             // fall through
           case 35: break;

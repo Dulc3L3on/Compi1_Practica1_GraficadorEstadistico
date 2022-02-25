@@ -2,6 +2,7 @@ package Backend.Objetos.Auxiliares
 
 import Backend.Objetos.Auxiliares.Atributos.Atributo
 import Backend.Objetos.Auxiliares.Atributos.Contenido.Contenido
+import Backend.Objetos.Auxiliares.Atributos.Contenido.ContenidoCadena
 
 class TablaDeSimbolos {
     private val palabrasReservadas = arrayOf("Def", "def", "Barras", "Pie", "titulo", "ejex", "ejey",
@@ -11,7 +12,7 @@ class TablaDeSimbolos {
     private val atributos_Pie = arrayOf("etiquetas", "valores", "unir", "tipo", "extra")//quité total de aquí porque ese debe existir SI tipo == Cantidad, lo de Cdad y % no debe estar aquí porque eso es contenido, no tipo de atributo, quien los rep aquí es tipo...
 
     private var tipoGrafica:Simbolo? = null//guardo un Simbolo para tener acceso a la línea y columna de la gráfica, para así hacer referencia a esa definición xD [más que all por la línea xD :v]
-    private var titulosRegistrados:ArrayList<String> = ArrayList() //no se dirá en qué #def está el título, porque si en alguna de ellas hubiera +1 defi de título estos no se add a esta lista y por lo tanto serí acierto el msje pero si vas a hacer eso para 1 tendrías qeu hacerlo para todos...
+    private var titulosRegistrados:ArrayList<ContenidoCadena> = ArrayList() //a menos que MUESTRES el # de definición de gráfica en la interfaz, solo add cuando existenciasTitulo == 1, si logras lo de la interfaz, entonces add un elemento a esta lista [nulo] solo con el fin de que cada posición que ocupe un título si corresp al #defiGraf -1 xD
 
     //:0 cabal que tb puedes acceder a sym_form_ID desde aquí tn xD, pero de todas maneras requerías almacenar el Simbolo por la línea y columna del nombre del tipo de atrib
     private var atributos:ArrayList<Atributo> = ArrayList()//esta es la tabla en sí xD
@@ -39,7 +40,7 @@ class TablaDeSimbolos {
         this.tipoGrafica = tipoGrafica
     }
 
-    fun registrarTitulo(titulo:String){//podría guardar un ContenidoCadena para tener acceso a la línea y columna de él, pero como no voy a hacer el análisis para los titulos sobrantes de una definición, entonces mejor no xD, porque si voy a ser precisa, tendría que app este proc a todos xD y no lo hago porque práticamente sería en vano, puesto que los otros los debe eliminar el usuario...
+    fun registrarTitulo(titulo:ContenidoCadena){//podría guardar un ContenidoCadena para tener acceso a la línea y columna de él, pero como no voy a hacer el análisis para los titulos sobrantes de una definición, entonces mejor no xD, porque si voy a ser precisa, tendría que app este proc a todos xD y no lo hago porque práticamente sería en vano, puesto que los otros los debe eliminar el usuario...
         this.titulosRegistrados.add(titulo)
     }
 
@@ -83,7 +84,7 @@ class TablaDeSimbolos {
        return this.atributos_Pie
     }
 
-    fun getTitulosRegistrados():ArrayList<String>{
+    fun getTitulosRegistrados():ArrayList<ContenidoCadena>{
         return this.titulosRegistrados
     }
 
