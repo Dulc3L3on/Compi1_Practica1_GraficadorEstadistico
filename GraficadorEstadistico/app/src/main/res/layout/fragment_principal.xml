@@ -12,7 +12,7 @@
         android:id="@+id/btn_graficar"
         android:layout_width="168dp"
         android:layout_height="57dp"
-        android:layout_marginBottom="28dp"
+        android:layout_marginBottom="36dp"
         android:background="#FACA82"
         android:elevation="10dp"
         android:fontFamily="@font/poppins_bold"
@@ -22,7 +22,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintVertical_bias="0.519" />
+        app:layout_constraintTop_toBottomOf="@+id/txt_input"
+        app:layout_constraintVertical_bias="1.0" />
 
     <EditText
         android:id="@+id/txt_input"
@@ -31,30 +32,46 @@
         android:background="@drawable/shadow"
         android:ems="10"
         android:gravity="start|top"
-        android:padding="10dp"
         android:inputType="textMultiLine"
+        android:padding="10dp"
         android:text="Escribe aquí las definiciones"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.511"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.454" />
+        app:layout_constraintVertical_bias="0.4" />
 
     <TextView
         android:id="@+id/tvw_titulo"
         android:layout_width="338dp"
         android:layout_height="37dp"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="40dp"
         android:background="#0090CAF9"
         android:fontFamily="@font/poppins_bold"
         android:text="Graficador Estadístico"
         android:textAlignment="center"
-
         android:textColor="@color/cardview_dark_background"
         android:textSize="25dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvw_posicion"
+        android:layout_width="323dp"
+        android:layout_height="23dp"
+        android:background="#CBCDD8"
+        android:fontFamily="@font/poppins_medium"
+        android:padding="3dp"
+        android:text="linea: 0 columna: 0"
+        android:textAlignment="viewEnd"
+        android:textSize="13dp"
+        app:layout_constraintBottom_toTopOf="@+id/btn_graficar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txt_input"
+        app:layout_constraintVertical_bias="0.343" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

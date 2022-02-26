@@ -1,6 +1,8 @@
 package Backend.Objetos.Graficas
 
-open class Grafica(titulo:String, unir: Array<DoubleArray>) {
+import java.io.Serializable
+
+open class Grafica(titulo:String, unir: Array<DoubleArray>):Serializable  {
     val titulo:String = titulo
     val unir:Array<DoubleArray> = unir
 
