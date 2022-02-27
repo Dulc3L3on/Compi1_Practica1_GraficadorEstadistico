@@ -271,6 +271,11 @@ public class Parser extends java_cup.runtime.lr_parser {
     public Parser(Lexer lexer){//nuevo constructor
         super(lexer);        
     }    
+
+    public void report_fatal_error(String message, Object info){
+        manejadorReportes.reportarError((new ReporteError(info.toString(), -1, 
+        -1, "Sintáctico", ReporteError.SEMANTIC_FATAL_ERROR)));
+    }
     
     protected int error_sync_size(){
         return 1;
@@ -302,9 +307,9 @@ class CUP$Parser$actions {
 
     private Atributo crearAtributo_Simple(String tipoContenido, Simbolo representante, Simbolo contenido){
         if(tipoContenido.equals("cadena")){
-            return new Atributo(representante, new ContenidoCadena(contenido.left, contenido.right, contenido.value.toString()));//o bien podría enviar un String desde ellexer xD, aunque creo que el tipo nuevamente lo debo especificar aquí, sino auqnue asigne el tipo correspondiente desde el lexer, aquí no estarán informados de eso y por lo tanto tendré que hacer el casteo...                    
+            return new Atributo(representante, new ContenidoCadena(contenido.getLeft(), contenido.getRight(), contenido.getValue().toString()));//o bien podría enviar un String desde ellexer xD, aunque creo que el tipo nuevamente lo debo especificar aquí, sino auqnue asigne el tipo correspondiente desde el lexer, aquí no estarán informados de eso y por lo tanto tendré que hacer el casteo...                    
         }else{
-            return new Atributo(representante, new ContenidoNumero(contenido.left, contenido.right, (Double) contenido.value));//o será un mejor un Dpubl.parseDouble()??? xD
+            return new Atributo(representante, new ContenidoNumero(contenido.getLeft(), contenido.getRight(), (Double) contenido.getValue()));//o será un mejor un Dpubl.parseDouble()??? xD
         }
     }
 
@@ -320,15 +325,20 @@ class CUP$Parser$actions {
         }
     }
 
-    private Reporte crearReporte(String tipoReporte, Simbolo simbolo, String descripcion, String tipo){//tipoReporte = operacion o error
+    private Reporte crearReporte(String tipoReporte, Simbolo simbolo, String descripcion, String tipo, int lineaError, int columnaError){//tipoReporte = operacion o error
         if(tipoReporte.equals("operacion")){
-            return new Reporte(simbolo.value.toString(), simbolo.left, simbolo.right, descripcion);
+            return new Reporte(simbolo.getValue().toString(), simbolo.getLeft(), simbolo.getRight(), descripcion);//el toString() lo puedo usar libremente puesto que el valor o es un String o un Double no más xD
         }else{
-            return new ReporteError(simbolo.value.toString(), simbolo.left, simbolo.right, tipo, descripcion);
+            if(simbolo == null){//quiere decir que no existe el T que se esperaba
+                return new ReporteError(concatExpected(), lineaError, columnaError, tipo, ReporteError.PARSER_EXPECTED);
+            }else{
+                return new ReporteError(simbolo.getValue().toString(), simbolo.getLeft(), simbolo.getRight(), tipo, descripcion);
+            }
+            
         }
     }
 
-    private String concatExpected(){//Creo que hay que colocar una directiva...
+    private String concatExpected(){
         List<Integer> expected = expected_token_ids();
         int tokensAMostrar = ((expected.size()>3)?3:expected.size());
         String lista = "";
@@ -338,6 +348,26 @@ class CUP$Parser$actions {
         }
         return lista;
     }   
+
+
+//mientras haces pruebas xD
+private void mostrarContenidoListasCadenas(){
+        for(int i = 0; i<listaCadenas.size(); i++){
+            System.out.println(listaCadenas.get(i));
+        }
+    }
+
+    private void mostrarContenidoListasNumeros(){
+        for(int i = 0; i<listaNumeros.size(); i++){
+            System.out.println(listaNumeros.get(i));
+        }
+    }
+
+    private void mostrarContenidoTuplas(){
+        for(int i = 0; i<tuplas.size(); i++){
+            System.out.println(tuplas.get(i)[0]+","+tuplas.get(i)[1]);            
+        }
+    }
 
     private void resetInfo_Listas(){//hay que revisarla y si se empleará, decidir dónde        
             listaCadenas.clear();                    
@@ -408,7 +438,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_ERROR_SECTION_STRUCT + concatExpected(), "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_ERROR_SECTION_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_ERROR_SECTION_STRUCT + concatExpected(), "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("inicio",0, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -446,8 +476,8 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int tipoGraficaleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).left;
 		int tipoGraficaright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).right;
-		Object tipoGrafica = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-3)).value;
-		manejadorGraficacion.analizarGraficaDefinida((Simbolo) tipoGrafica);
+		Simbolo tipoGrafica = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-3)).value;
+		System.out.println("[S] estudiar gráfica " + tipoGrafica.getValue());manejadorGraficacion.analizarGraficaDefinida(tipoGrafica);
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("grafico",3, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -458,8 +488,8 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int tipoGraficaleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).left;
 		int tipoGraficaright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).right;
-		Object tipoGrafica = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-3)).value;
-		manejadorGraficacion.analizarGraficaDefinida((Simbolo) tipoGrafica);
+		Simbolo tipoGrafica = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-3)).value;
+		System.out.println("[S] estudiar gráfica " + tipoGrafica.getValue());manejadorGraficacion.analizarGraficaDefinida( tipoGrafica);
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("grafico",3, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -471,7 +501,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_DEFINITION_STRUCT + concatExpected(), "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_BAD_DEFINITION_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_DEFINITION_STRUCT + concatExpected(), "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("grafico",3, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -492,7 +522,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_NUMBER_OF_PARAMS_B, "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_NUMBER_OF_PARAMS_B);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_NUMBER_OF_PARAMS_B, "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("cuerpoBarra",4, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -513,7 +543,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_EXPECTED_SEMICOLON, "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_EXPECTED_SEMICOLON);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_EXPECTED_SEMICOLON, "Semántico", errleft, errright)));
                                                                                                 resetInfo_Listas();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("paramBarra",5, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -525,11 +555,11 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int contenidoleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int contenidoright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Object contenido = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", (Simbolo) representante, (Simbolo) contenido));
+		Simbolo contenido = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribGeneral",6, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -540,8 +570,8 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
-		analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", (Simbolo) representante));
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
+		mostrarContenidoTuplas();analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", representante));
                                                                                                 tuplas.clear();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribGeneral",6, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -562,7 +592,7 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int repTuplaleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).left;
 		int repTuplaright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).right;
-		Object repTupla = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
+		Simbolo repTupla = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
 		int valorXleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).left;
 		int valorXright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).right;
 		Double valorX = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-3)).value;
@@ -570,7 +600,7 @@ class CUP$Parser$actions {
 		int valorYright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
 		Double valorY = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
 		tuplas.add(new double[]{valorX, valorY});
-                                                                                                listaLineas.add(repTuplaleft); listaColumnas.add(repTuplaright);
+                                                                                                listaLineas.add(repTupla.getLeft()); listaColumnas.add(repTupla.getRight());
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("tupla",7, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -582,7 +612,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_COUPLE, "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_BAD_COUPLE);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_COUPLE, "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("tupla",7, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -602,8 +632,8 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
-		analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", (Simbolo) representante));
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
+		mostrarContenidoListasCadenas();analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", representante));
                                                                                                 listaCadenas.clear();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribBarra",8, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -615,8 +645,8 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
-		analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", (Simbolo) representante));
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
+		mostrarContenidoListasNumeros();analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", representante));
                                                                                                 listaNumeros.clear();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribBarra",8, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -629,7 +659,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_ATRIB_BARRAS_STRUCT + concatExpected(), "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_BAD_ATRIB_BARRAS_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_ATRIB_BARRAS_STRUCT + concatExpected(), "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribBarra",8, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -659,7 +689,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_NUMBER_OF_PARAMS_P, "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_NUMBER_OF_PARAMS_P);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_NUMBER_OF_PARAMS_P, "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("cuerpoPie",9, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -680,7 +710,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_EXPECTED_SEMICOLON, "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_EXPECTED_SEMICOLON);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_EXPECTED_SEMICOLON, "Semántico", errleft, errright)));
                                                                                                  resetInfo_Listas();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("paramPie",10, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -701,8 +731,8 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
-		analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", (Simbolo) representante));
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
+		mostrarContenidoListasCadenas();analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", representante));
                                                                                                   listaCadenas.clear();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribPie",11, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -714,8 +744,8 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
-		analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", (Simbolo) representante));
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
+		mostrarContenidoListasNumeros();analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", representante));
                                                                                                   listaNumeros.clear();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribPie",11, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -727,11 +757,11 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int contenidoleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int contenidoright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Object contenido = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", (Simbolo) representante, (Simbolo) contenido));
+		Simbolo contenido = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		System.out.println("[S] cadena (extra)"+ contenido.getValue());analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribPie",11, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -742,11 +772,11 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int contenidoleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int contenidoright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Object contenido = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", (Simbolo) representante, (Simbolo) contenido));
+		Simbolo contenido = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		System.out.println("[S] cadena (tipo)"+ contenido.getValue());analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribPie",11, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -757,11 +787,11 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int valorleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valorright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Double valor = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		analizadorSemantico.setAtributo(crearAtributo_Simple("numero", (Simbolo) representante, new Simbolo(ParserSym.NUMERO, filaContenido, columnaContenido, valor)));
+		System.out.println("[S] numero (total)"+ valor);analizadorSemantico.setAtributo(crearAtributo_Simple("numero", representante, new Simbolo(ParserSym.NUMERO, filaContenido, columnaContenido, valor, null)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribPie",11, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -773,7 +803,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_ATRIB_PIE_STRUCT + concatExpected(), "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_BAD_ATRIB_PIE_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_ATRIB_PIE_STRUCT + concatExpected(), "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("atribPie",11, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -781,10 +811,10 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 35: // elTipo ::= CANTIDAD 
             {
-              Object RESULT =null;
+              Simbolo RESULT =null;
 		int contenidoleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int contenidoright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Object contenido = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		Simbolo contenido = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
 		RESULT = contenido;
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("elTipo",12, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -793,10 +823,10 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 36: // elTipo ::= PORCENTAJE 
             {
-              Object RESULT =null;
+              Simbolo RESULT =null;
 		int contenidoleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int contenidoright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Object contenido = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		Simbolo contenido = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
 		RESULT = contenido;
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("elTipo",12, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
@@ -805,11 +835,11 @@ class CUP$Parser$actions {
           /*. . . . . . . . . . . . . . . . . . . .*/
           case 37: // elTipo ::= error 
             {
-              Object RESULT =null;
+              Simbolo RESULT =null;
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_INVALID_TOTAL_TYPE, "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_INVALID_TOTAL_TYPE);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_INVALID_TOTAL_TYPE, "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("elTipo",12, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -829,8 +859,8 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int cadenaleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int cadenaright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Object cadena = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		listaCadenas.add(cadena.toString());
+		Simbolo cadena = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		listaCadenas.add((String) cadena.getValue());
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("listaCadenas",13, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -842,7 +872,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_STRING_LIST_STRUCT + concatExpected(), "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_BAD_STRING_LIST_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_STRING_LIST_STRUCT + concatExpected(), "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("listaCadenas",13, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -876,7 +906,7 @@ class CUP$Parser$actions {
 		int errleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int errright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
 		Object err = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
-		manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_NUMBER_EXPRESION + concatExpected(), "Semántico")));
+		System.out.println(ReporteError.SEMANTIC_BAD_NUMBER_EXPRESION + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_NUMBER_EXPRESION + concatExpected(), "Semántico", errleft, errright)));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("listaNumeros",14, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -890,12 +920,12 @@ class CUP$Parser$actions {
 		Double valor1 = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int operacionleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int operacionright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
-		Object operacion = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		Simbolo operacion = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
 		int valor2left = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valor2right = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Double valor2 = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = valor1 + valor2;
-                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).getAnterior().value.toString()+Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));
+		RESULT = valor1 + valor2;System.out.println("[S] suma"+RESULT);
+                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getAnterior().getValue().toString()+operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -1, -2));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("valNumerico",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -909,12 +939,12 @@ class CUP$Parser$actions {
 		Double valor1 = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int operacionleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int operacionright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
-		Object operacion = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		Simbolo operacion = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
 		int valor2left = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valor2right = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Double valor2 = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = valor1 - valor2;
-                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).getAnterior().value.toString()+Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));
+		RESULT = valor1 - valor2;System.out.println("[S] resta"+RESULT);
+                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getAnterior().getValue().toString()+operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -2, -2));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("valNumerico",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -928,12 +958,12 @@ class CUP$Parser$actions {
 		Double valor1 = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int operacionleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int operacionright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
-		Object operacion = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		Simbolo operacion = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
 		int valor2left = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valor2right = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Double valor2 = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = valor1 * valor2;
-                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).getAnterior().value.toString()+Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));
+		RESULT = valor1 * valor2;System.out.println("[S] multi"+RESULT);
+                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getAnterior().getValue().toString()+operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -3, -2));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("valNumerico",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -947,12 +977,12 @@ class CUP$Parser$actions {
 		Double valor1 = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int operacionleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int operacionright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
-		Object operacion = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		Simbolo operacion = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
 		int valor2left = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valor2right = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Double valor2 = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = valor1 / valor2;
-                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).getAnterior().value.toString()+Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));
+		RESULT = valor1 / valor2;System.out.println("[S] div"+RESULT);
+                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getAnterior().getValue().toString()+operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -4, -2));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("valNumerico",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -963,9 +993,9 @@ class CUP$Parser$actions {
               Double RESULT =null;
 		int numeroleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int numeroright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
-		Double numero = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = numero;
-                                                                             filaContenido = numeroleft; columnaContenido = numeroright;
+		Simbolo numero = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		RESULT = ((Double) numero.getValue());System.out.println("[S] numero [op] "+RESULT);
+                                                                             filaContenido = numero.getLeft(); columnaContenido = numero.getRight();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("valNumerico",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -976,13 +1006,13 @@ class CUP$Parser$actions {
               Double RESULT =null;
 		int operacionleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int operacionright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
-		Object operacion = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		Simbolo operacion = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
 		int valorleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
 		int valorright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
 		Double valor = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
-		RESULT = -valor;
-                                                                              manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));
-                                                                              filaContenido = operacionleft; columnaContenido = operacionright;
+		RESULT = -valor;System.out.println("[S] menos"+RESULT);
+                                                                              manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -5, -2));
+                                                                              filaContenido = operacion.getLeft(); columnaContenido = operacion.getRight();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("valNumerico",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -993,12 +1023,12 @@ class CUP$Parser$actions {
               Double RESULT =null;
 		int parentesisleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).left;
 		int parentesisright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).right;
-		Object parentesis = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
+		Simbolo parentesis = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
 		int valorleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
 		int valorright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
 		Double valor = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
-		RESULT = valor;
-                                                                             filaContenido = parentesisleft; columnaContenido = parentesisright;
+		RESULT = valor;System.out.println("[S] agrupacion"+RESULT);
+                                                                             filaContenido = parentesis.getLeft(); columnaContenido = parentesis.getRight();
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("valNumerico",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -1027,11 +1057,11 @@ class CUP$Parser$actions {
               Object RESULT =null;
 		int representanteleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).left;
 		int representanteright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).right;
-		Object representante = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
+		Simbolo representante = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
 		int tituloleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).left;
 		int tituloright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)).right;
-		Object titulo = (Object)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
-		manejadorGraficacion.analizarEjecucion(crearAtributo_Simple("cadena", (Simbolo) representante, (Simbolo) titulo));
+		Simbolo titulo = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-2)).value;
+		System.out.println("[S] ejecutar: "+titulo.getValue());manejadorGraficacion.analizarEjecucion(crearAtributo_Simple("cadena", representante, titulo));
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("exe",17, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;

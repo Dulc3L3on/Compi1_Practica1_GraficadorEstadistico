@@ -11,6 +11,7 @@ class ReporteError(lexema: String, linea: Int, columna: Int, tipo:String, descri
 
         //Errores revisados internamente
         //Definición gráficas
+        const val SEMANTIC_FATAL_ERROR = "Imposible entender la estructura establecida"
         const val SEMANTIC_MISSING_ATTRIBUTE = "no se definió para la gráfica en #línea "// la incexistencia de TOTAL irá aquí?... sino entonces este no es error SEMANTIC sino PARSER
         //sería genial numerar las estructuras de definición de gráficas y tb las de exe, así sería más eficaz el msje que da el # de definición...
         //sino tb podrías decir "el título ya nombra una gráfica"/o "el título ya ha sido def en una gráfica/"este título ya ha sido utilizado" xD"

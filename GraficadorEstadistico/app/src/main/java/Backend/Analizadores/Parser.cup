@@ -41,9 +41,9 @@ action code{://este código no es accesible desde el proyecto xD
 
     private Atributo crearAtributo_Simple(String tipoContenido, Simbolo representante, Simbolo contenido){
         if(tipoContenido.equals("cadena")){
-            return new Atributo(representante, new ContenidoCadena(contenido.left, contenido.right, contenido.value.toString()));//o bien podría enviar un String desde ellexer xD, aunque creo que el tipo nuevamente lo debo especificar aquí, sino auqnue asigne el tipo correspondiente desde el lexer, aquí no estarán informados de eso y por lo tanto tendré que hacer el casteo...                    
+            return new Atributo(representante, new ContenidoCadena(contenido.getLeft(), contenido.getRight(), contenido.getValue().toString()));//o bien podría enviar un String desde ellexer xD, aunque creo que el tipo nuevamente lo debo especificar aquí, sino auqnue asigne el tipo correspondiente desde el lexer, aquí no estarán informados de eso y por lo tanto tendré que hacer el casteo...                    
         }else{
-            return new Atributo(representante, new ContenidoNumero(contenido.left, contenido.right, (Double) contenido.value));//o será un mejor un Dpubl.parseDouble()??? xD
+            return new Atributo(representante, new ContenidoNumero(contenido.getLeft(), contenido.getRight(), (Double) contenido.getValue()));//o será un mejor un Dpubl.parseDouble()??? xD
         }
     }
 
@@ -59,15 +59,20 @@ action code{://este código no es accesible desde el proyecto xD
         }
     }
 
-    private Reporte crearReporte(String tipoReporte, Simbolo simbolo, String descripcion, String tipo){//tipoReporte = operacion o error
+    private Reporte crearReporte(String tipoReporte, Simbolo simbolo, String descripcion, String tipo, int lineaError, int columnaError){//tipoReporte = operacion o error
         if(tipoReporte.equals("operacion")){
-            return new Reporte(simbolo.value.toString(), simbolo.left, simbolo.right, descripcion);
+            return new Reporte(simbolo.getValue().toString(), simbolo.getLeft(), simbolo.getRight(), descripcion);//el toString() lo puedo usar libremente puesto que el valor o es un String o un Double no más xD
         }else{
-            return new ReporteError(simbolo.value.toString(), simbolo.left, simbolo.right, tipo, descripcion);
+            if(simbolo == null){//quiere decir que no existe el T que se esperaba
+                return new ReporteError(concatExpected(), lineaError, columnaError, tipo, ReporteError.PARSER_EXPECTED);
+            }else{
+                return new ReporteError(simbolo.getValue().toString(), simbolo.getLeft(), simbolo.getRight(), tipo, descripcion);
+            }
+            
         }
     }
 
-    private String concatExpected(){//Creo que hay que colocar una directiva...
+    private String concatExpected(){
         List<Integer> expected = expected_token_ids();
         int tokensAMostrar = ((expected.size()>3)?3:expected.size());
         String lista = "";
@@ -77,6 +82,26 @@ action code{://este código no es accesible desde el proyecto xD
         }
         return lista;
     }   
+
+
+//mientras haces pruebas xD
+private void mostrarContenidoListasCadenas(){
+        for(int i = 0; i<listaCadenas.size(); i++){
+            System.out.println(listaCadenas.get(i));
+        }
+    }
+
+    private void mostrarContenidoListasNumeros(){
+        for(int i = 0; i<listaNumeros.size(); i++){
+            System.out.println(listaNumeros.get(i));
+        }
+    }
+
+    private void mostrarContenidoTuplas(){
+        for(int i = 0; i<tuplas.size(); i++){
+            System.out.println(tuplas.get(i)[0]+","+tuplas.get(i)[1]);            
+        }
+    }
 
     private void resetInfo_Listas(){//hay que revisarla y si se empleará, decidir dónde        
             listaCadenas.clear();                    
@@ -96,6 +121,11 @@ parser code {://código que modifica el comportamiento del parser [sobreescribie
     public Parser(Lexer lexer){//nuevo constructor
         super(lexer);        
     }    
+
+    public void report_fatal_error(String message, Object info){
+        manejadorReportes.reportarError((new ReporteError(info.toString(), -1, 
+        -1, "Sintáctico", ReporteError.SEMANTIC_FATAL_ERROR)));
+    }
     
     protected int error_sync_size(){
         return 1;
@@ -109,18 +139,18 @@ parser code {://código que modifica el comportamiento del parser [sobreescribie
 :}//este si puede ser accedido desde el código...
 
 //2. terminales
-terminal Double NUMERO;
-terminal CADENA;
-terminal SUMA, RESTA, MULTI, DIV, MENOS;
-terminal PUNTO_COMA, LLAVE_A, LLAVE_C, DOS_PUNTOS, COMA, PARENTESIS_A, PARENTESIS_C, CORCHETE_A, CORCHETE_C;
-terminal DEF, BARRAS, PIE, TITULO, EJEX, EJEY, ETIQUETAS, VALORES, UNIR, TIPO, TOTAL, CANTIDAD, PORCENTAJE, EXTRA, EJECUTAR;
+terminal Simbolo NUMERO, CADENA;
+terminal Simbolo SUMA, RESTA, MULTI, DIV, MENOS;
+terminal Simbolo PUNTO_COMA, LLAVE_A, LLAVE_C, DOS_PUNTOS, COMA, PARENTESIS_A, PARENTESIS_C, CORCHETE_A, CORCHETE_C;
+terminal Simbolo DEF, BARRAS, PIE, TITULO, EJEX, EJEY, ETIQUETAS, VALORES, UNIR, TIPO, TOTAL, CANTIDAD, PORCENTAJE, EXTRA, EJECUTAR;
 
 //3. no terminales
 non terminal inicio;
 non terminal primerseccion, definicion, grafico;
-non terminal cuerpoBarra, paramBarra, atribGeneral, tupla, atribBarra, cuerpoPie, paramPie, atribPie, elTipo;
+non terminal cuerpoBarra, paramBarra, atribGeneral, tupla, atribBarra, cuerpoPie, paramPie, atribPie;
+non terminal Simbolo elTipo;
 non terminal listaCadenas, listaNumeros;
-non terminal Double valNumerico;
+non terminal Double valNumerico;//yo digo que si lo puedo dejar Double, como de todos modos voy a hacer la conversión... y el dato de este se add a una lista que recibe valores Double, o [double[]] entonces no hay problema...
 non terminal segundaSeccion, exe;
 
 //3.1 precedencia y asociatividad
@@ -133,7 +163,7 @@ start with inicio;
 
 inicio ::= primerseccion segundaSeccion
         | segundaSeccion                        /*el error no se puede establecer aquí porque sería lo último que se exe y por tanto mostraría error por cada ejecución, y al final el por qué de todo eso; yo pienso que mejor ir al grano del problema xD*/
-        | error:err                                                                          {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_ERROR_SECTION_STRUCT + concatExpected(), "Semántico")));:}
+        | error:err                                                                          {:System.out.println(ReporteError.SEMANTIC_ERROR_SECTION_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_ERROR_SECTION_STRUCT + concatExpected(), "Semántico", errleft, errright)));:}
         ;
 
 primerseccion ::= primerseccion definicion
@@ -145,25 +175,25 @@ definicion ::= DEF grafico
             /*E -> faltó instrucción Def/def*/
             ;
 
-grafico ::= BARRAS:tipoGrafica LLAVE_A cuerpoBarra LLAVE_C                                    {:manejadorGraficacion.analizarGraficaDefinida((Simbolo) tipoGrafica);:}
-         |  PIE:tipoGrafica LLAVE_A cuerpoPie LLAVE_C                                         {:manejadorGraficacion.analizarGraficaDefinida((Simbolo) tipoGrafica);:}
-         |  error:err                                                                         {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_DEFINITION_STRUCT + concatExpected(), "Semántico")));:}
+grafico ::= BARRAS:tipoGrafica LLAVE_A cuerpoBarra LLAVE_C                                    {:System.out.println("[S] estudiar gráfica " + tipoGrafica.getValue());manejadorGraficacion.analizarGraficaDefinida(tipoGrafica);:}
+         |  PIE:tipoGrafica LLAVE_A cuerpoPie LLAVE_C                                         {:System.out.println("[S] estudiar gráfica " + tipoGrafica.getValue());manejadorGraficacion.analizarGraficaDefinida( tipoGrafica);:}
+         |  error:err                                                                         {:System.out.println(ReporteError.SEMANTIC_BAD_DEFINITION_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_DEFINITION_STRUCT + concatExpected(), "Semántico", errleft, errright)));:}
          /*estructura de definición inválida*/
          ;
 
 cuerpoBarra ::= paramBarra paramBarra paramBarra paramBarra
-             |  error:err                                                                     {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_NUMBER_OF_PARAMS_B, "Semántico")));:}
+             |  error:err                                                                     {:System.out.println(ReporteError.SEMANTIC_NUMBER_OF_PARAMS_B);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_NUMBER_OF_PARAMS_B, "Semántico", errleft, errright)));:}
              /*E -> Para gráfico de barras se esperba 4 atributos*/
              ;
 
 paramBarra ::= atribBarra PUNTO_COMA
-            |  error:err                                                                      {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_EXPECTED_SEMICOLON, "Semántico")));
+            |  error:err                                                                      {:System.out.println(ReporteError.SEMANTIC_EXPECTED_SEMICOLON);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_EXPECTED_SEMICOLON, "Semántico", errleft, errright)));
                                                                                                 resetInfo_Listas();:}
             /*E -> falta ";"*//*lo de "se esperaba tal estructura no, a menos que no se pueda definir el error en la RP de atribGraficaCorresp*/
             ;
 
-atribGeneral ::= TITULO:representante DOS_PUNTOS CADENA:contenido                             {:analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", (Simbolo) representante, (Simbolo) contenido));:}  
-              |  UNIR:representante DOS_PUNTOS CORCHETE_A tupla CORCHETE_C                    {:analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", (Simbolo) representante));
+atribGeneral ::= TITULO:representante DOS_PUNTOS CADENA:contenido                             {:System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}  
+              |  UNIR:representante DOS_PUNTOS CORCHETE_A tupla CORCHETE_C                    {:mostrarContenidoTuplas();analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", representante));
                                                                                                 tuplas.clear();:}
               //--|  error:err                                                                    {:manejadorReportes.reportarError(crearReporte("error", err, ReporteError.SEMANTIC_BAD_ATRIB_GRAPHIC_STRUCT + concatExpected(), "Semántico"));:}
               /*E -> atributo de gráfica malformado*/
@@ -172,42 +202,42 @@ atribGeneral ::= TITULO:representante DOS_PUNTOS CADENA:contenido               
 
 tupla ::= tupla COMA LLAVE_A valNumerico COMA valNumerico LLAVE_C
        |  LLAVE_A:repTupla valNumerico:valorX COMA valNumerico:valorY LLAVE_C                 {:tuplas.add(new double[]{valorX, valorY});
-                                                                                                listaLineas.add(repTuplaleft); listaColumnas.add(repTuplaright);:}//quedamos que para las ubic del contenido del listado de tuplas, se iba a enviar la ubic del {, con el fin de hacer referencia a la tupla completa y no a cada uno de los elementos de la pareja... pero si hay error, creo que ahí si se formaría un revoltijo xD xD, porque podría suceder que la axn de la tupla que contenía el error, nunca se exe.... bueno si eso sucede tampoco sería add la tupla a la lista, entonces así no habría problema xD, pero si que lo habría si el { no apareciera...
-       |  error:err COMA/*si no da err se quedará, else LLAVE_A, aunque se salte una tupla*/  {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_COUPLE, "Semántico")));:}
+                                                                                                listaLineas.add(repTupla.getLeft()); listaColumnas.add(repTupla.getRight());:}//quedamos que para las ubic del contenido del listado de tuplas, se iba a enviar la ubic del {, con el fin de hacer referencia a la tupla completa y no a cada uno de los elementos de la pareja... pero si hay error, creo que ahí si se formaría un revoltijo xD xD, porque podría suceder que la axn de la tupla que contenía el error, nunca se exe.... bueno si eso sucede tampoco sería add la tupla a la lista, entonces así no habría problema xD, pero si que lo habría si el { no apareciera...
+       |  error:err COMA/*si no da err se quedará, else LLAVE_A, aunque se salte una tupla*/  {:System.out.println(ReporteError.SEMANTIC_BAD_COUPLE);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_COUPLE, "Semántico", errleft, errright)));:}
        /*para tupla se espera: { # , # }*/
        ;
 
 atribBarra ::= atribGeneral
-            |  EJEX:representante DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C               {:analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", (Simbolo) representante));
+            |  EJEX:representante DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C               {:mostrarContenidoListasCadenas();analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", representante));
                                                                                                 listaCadenas.clear();:} 
-            |  EJEY:representante DOS_PUNTOS CORCHETE_A listaNumeros CORCHETE_C               {:analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", (Simbolo) representante));
+            |  EJEY:representante DOS_PUNTOS CORCHETE_A listaNumeros CORCHETE_C               {:mostrarContenidoListasNumeros();analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", representante));
                                                                                                 listaNumeros.clear();:}
-            |  error:err                                                                      {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_ATRIB_BARRAS_STRUCT + concatExpected(), "Semántico")));:}
+            |  error:err                                                                      {:System.out.println(ReporteError.SEMANTIC_BAD_ATRIB_BARRAS_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_ATRIB_BARRAS_STRUCT + concatExpected(), "Semántico", errleft, errright)));:}
             /*E -> atributo de Barras malformado*/
             ;
 
 cuerpoPie ::= paramPie paramPie paramPie paramPie paramPie paramPie
            |  paramPie paramPie paramPie paramPie paramPie paramPie paramPie
-           |  error:err                                                                        {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_NUMBER_OF_PARAMS_P, "Semántico")));:}
+           |  error:err                                                                        {:System.out.println(ReporteError.SEMANTIC_NUMBER_OF_PARAMS_P);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_NUMBER_OF_PARAMS_P, "Semántico", errleft, errright)));:}
            /*E -> se esperaban 6 o 7 atributos*/
            /*o más específico -> Gráfico de Pie requiere de 6 o 7 atributos*/
            ;
 
 paramPie ::= atribPie PUNTO_COMA        
-          |  error:err                                                                         {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_EXPECTED_SEMICOLON, "Semántico")));
+          |  error:err                                                                         {:System.out.println(ReporteError.SEMANTIC_EXPECTED_SEMICOLON);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_EXPECTED_SEMICOLON, "Semántico", errleft, errright)));
                                                                                                  resetInfo_Listas();:}
           /*E -> falta ";" [porque lo de atributo malformado se informaría en las producciones de abajo*/
           ;
 
 atribPie ::= atribGeneral
-          |  ETIQUETAS:representante DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C              {:analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", (Simbolo) representante));
+          |  ETIQUETAS:representante DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C              {:mostrarContenidoListasCadenas();analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", representante));
                                                                                                   listaCadenas.clear();:}
-          |  VALORES:representante DOS_PUNTOS CORCHETE_A listaNumeros CORCHETE_C                {:analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", (Simbolo) representante));
+          |  VALORES:representante DOS_PUNTOS CORCHETE_A listaNumeros CORCHETE_C                {:mostrarContenidoListasNumeros();analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", representante));
                                                                                                   listaNumeros.clear();:}
-          |  EXTRA:representante DOS_PUNTOS CADENA:contenido                                    {:analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", (Simbolo) representante, (Simbolo) contenido));:}
-          |  TIPO:representante DOS_PUNTOS elTipo:contenido                                     {:analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", (Simbolo) representante, (Simbolo) contenido));:}
-          |  TOTAL:representante DOS_PUNTOS valNumerico:valor                                   {:analizadorSemantico.setAtributo(crearAtributo_Simple("numero", (Simbolo) representante, new Simbolo(ParserSym.NUMERO, filaContenido, columnaContenido, valor)));:}
-          |  error:err                                                                          {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_ATRIB_PIE_STRUCT + concatExpected(), "Semántico")));:}
+          |  EXTRA:representante DOS_PUNTOS CADENA:contenido                                    {:System.out.println("[S] cadena (extra)"+ contenido.getValue());analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}
+          |  TIPO:representante DOS_PUNTOS elTipo:contenido                                     {:System.out.println("[S] cadena (tipo)"+ contenido.getValue());analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}
+          |  TOTAL:representante DOS_PUNTOS valNumerico:valor                                   {:System.out.println("[S] numero (total)"+ valor);analizadorSemantico.setAtributo(crearAtributo_Simple("numero", representante, new Simbolo(ParserSym.NUMERO, filaContenido, columnaContenido, valor, null)));:}
+          |  error:err                                                                          {:System.out.println(ReporteError.SEMANTIC_BAD_ATRIB_PIE_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_ATRIB_PIE_STRUCT + concatExpected(), "Semántico", errleft, errright)));:}
           /*se esperaba un atributo eti, vals, ex, tipo, tot... o quizá pueda formarse a partir del id del T en el que se hayó un error
             quizá pueda decir error en T se esperaba...
             E -> estructura de atributo incorreca  
@@ -217,13 +247,13 @@ atribPie ::= atribGeneral
 
 elTipo ::= CANTIDAD:contenido                                                                   {:RESULT = contenido;:}//si no funciona, por no haberle asignado un tipo a cdad y %, entoncs vamos a crear una var...
         |  PORCENTAJE:contenido                                                                 {:RESULT = contenido;:}
-        |  error:err/*E -> tipo de total inválido */                                            {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_INVALID_TOTAL_TYPE, "Semántico")));:}
+        |  error:err/*E -> tipo de total inválido */                                            {:System.out.println(ReporteError.SEMANTIC_INVALID_TOTAL_TYPE);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_INVALID_TOTAL_TYPE, "Semántico", errleft, errright)));:}
         /*[se esperaba cantidad o porcentaje]*/
         ;
 
-listaCadenas ::= listaCadenas COMA CADENA
-              |  CADENA:cadena                                               {:listaCadenas.add(cadena.toString());:}//se setea el dato, la fila y col no se setearán porque no se requieren, ya que no buscaras que los ele en los catálogos sean únicos...
-              |  error:err                                                   {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_STRING_LIST_STRUCT + concatExpected(), "Semántico")));:}
+listaCadenas ::= listaCadenas COMA CADENA                                      //no hay pena de hacer así directo un casteo, puesto que el dato que envías o es String o es Double y como tú estas asignando los arr entonces... xD
+              |  CADENA:cadena                                               {:listaCadenas.add((String) cadena.getValue());:}//se setea el dato, la fila y col no se setearán porque no se requieren, ya que no buscaras que los ele en los catálogos sean únicos...
+              |  error:err                                                   {:System.out.println(ReporteError.SEMANTIC_BAD_STRING_LIST_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_STRING_LIST_STRUCT + concatExpected(), "Semántico", errleft, errright)));:}
               /*formato de lista de cadenas inválido*/
               /*se esperaba una lista de 1 o más cadenas*/              
               ;
@@ -231,26 +261,26 @@ listaCadenas ::= listaCadenas COMA CADENA
 listaNumeros ::= listaNumeros COMA valNumerico
               |  valNumerico:valor                                           {:listaNumeros.add(valor);
                                                                                listaLineas.add(filaContenido); listaColumnas.add(columnaContenido);:}//se setea el dato y tb debería setearse la fila y col que se almacenaron en las var individuales que se llenaron en las prod de operaciones...
-              |  error:err COMA/*formato de lista de vals# inválido*/        {:manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_NUMBER_EXPRESION + concatExpected(), "Semántico")));:}
+              |  error:err COMA/*formato de lista de vals# inválido*/        {:System.out.println(ReporteError.SEMANTIC_BAD_NUMBER_EXPRESION + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_NUMBER_EXPRESION + concatExpected(), "Semántico", errleft, errright)));:}
               /*se esperaba una lista de 1 o más números*/  
               ;
 
-valNumerico ::= valNumerico:valor1 SUMA:operacion valNumerico:valor2         {:RESULT = valor1 + valor2;
-                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).getAnterior().value.toString()+Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));:}/*result;establecimientoReporteOperaciones*/
-             |  valNumerico:valor1 RESTA:operacion valNumerico:valor2        {:RESULT = valor1 - valor2;
-                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).getAnterior().value.toString()+Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));:}/*result;establecimientoReporteOperaciones*/
-             |  valNumerico:valor1 MULTI:operacion valNumerico:valor2        {:RESULT = valor1 * valor2;
-                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).getAnterior().value.toString()+Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));:}/*result;establecimientoReporteOperaciones*/
-             |  valNumerico:valor1 DIV:operacion valNumerico:valor2          {:RESULT = valor1 / valor2;
-                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).getAnterior().value.toString()+Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));:}/*result;establecimientoReporteOperaciones*/
-             |  NUMERO:numero                                                {:RESULT = numero;
-                                                                             filaContenido = numeroleft; columnaContenido = numeroright;:}/*result; linea y col [vamos a ver si l final se queda con el + a la izq...*/
-             |  RESTA:operacion valNumerico:valor                            {:RESULT = -valor;
-                                                                              manejadorReportes.reportarOperacion(crearReporte("operacion", (Simbolo) operacion, (Simbolo.Companion.parseToken(operacion).value.toString()+Simbolo.Companion.parseToken(operacion).getSiguiente().value.toString()),""));
-                                                                              filaContenido = operacionleft; columnaContenido = operacionright;:}/*result;linea y col; establecimientoReporteOperaciones*///En este caso solo se concat el right, por ser negación...
+valNumerico ::= valNumerico:valor1 SUMA:operacion valNumerico:valor2         {:RESULT = valor1 + valor2;System.out.println("[S] suma"+RESULT);
+                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getAnterior().getValue().toString()+operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -1, -2));:}/*result;establecimientoReporteOperaciones*/
+             |  valNumerico:valor1 RESTA:operacion valNumerico:valor2        {:RESULT = valor1 - valor2;System.out.println("[S] resta"+RESULT);
+                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getAnterior().getValue().toString()+operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -2, -2));:}/*result;establecimientoReporteOperaciones*/
+             |  valNumerico:valor1 MULTI:operacion valNumerico:valor2        {:RESULT = valor1 * valor2;System.out.println("[S] multi"+RESULT);
+                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getAnterior().getValue().toString()+operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -3, -2));:}/*result;establecimientoReporteOperaciones*/
+             |  valNumerico:valor1 DIV:operacion valNumerico:valor2          {:RESULT = valor1 / valor2;System.out.println("[S] div"+RESULT);
+                                                                             manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getAnterior().getValue().toString()+operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -4, -2));:}/*result;establecimientoReporteOperaciones*/
+             |  NUMERO:numero                                                {:RESULT = ((Double) numero.getValue());System.out.println("[S] numero [op] "+RESULT);
+                                                                             filaContenido = numero.getLeft(); columnaContenido = numero.getRight();:}/*result; linea y col [vamos a ver si l final se queda con el + a la izq...*/
+             |  RESTA:operacion valNumerico:valor                            {:RESULT = -valor;System.out.println("[S] menos"+RESULT);
+                                                                              manejadorReportes.reportarOperacion(crearReporte("operacion", operacion, (operacion.getValue().toString()+operacion.getSiguiente().getValue().toString()),"", -5, -2));
+                                                                              filaContenido = operacion.getLeft(); columnaContenido = operacion.getRight();:}/*result;linea y col; establecimientoReporteOperaciones*///En este caso solo se concat el right, por ser negación...
              %prec MENOS                                            
-             |  PARENTESIS_A:parentesis valNumerico:valor PARENTESIS_C       {:RESULT = valor;
-                                                                             filaContenido = parentesisleft; columnaContenido = parentesisright;:}/*result; linea y col*/
+             |  PARENTESIS_A:parentesis valNumerico:valor PARENTESIS_C       {:RESULT = valor;System.out.println("[S] agrupacion"+RESULT);
+                                                                             filaContenido = parentesis.getLeft(); columnaContenido = parentesis.getRight();:}/*result; linea y col*/
          //--|error:err /*E -> operacion aritmética incorrecta : T*/         {:manejadorReportes.reportarError(crearReporte("error", err, ReporteError.SEMANTIC_BAD_OPERATION, "Semántico"));
          //                                                                    filaContenido = columnaContenido = -1;:}//y si no se llegara a exe la axn del padre [list#] entonces yo diría que habría que resetear en la nueva prod que solo invocaría a listado_# o cadenas para permitirme esa axn xD o en todo caso sería en iba a decir donde está la...
              //OJO: ahh si, podría ser donde se declaran los parámetros xD [en axn error y axn normal xD]
@@ -261,7 +291,7 @@ segundaSeccion ::= segundaSeccion exe
                 |  exe
                 ;
 
-exe ::= EJECUTAR:representante PARENTESIS_A CADENA:titulo PARENTESIS_C PUNTO_COMA        {:manejadorGraficacion.analizarEjecucion(crearAtributo_Simple("cadena", (Simbolo) representante, (Simbolo) titulo));:}
+exe ::= EJECUTAR:representante PARENTESIS_A CADENA:titulo PARENTESIS_C PUNTO_COMA        {:System.out.println("[S] ejecutar: "+titulo.getValue());manejadorGraficacion.analizarEjecucion(crearAtributo_Simple("cadena", representante, titulo));:}
   //--|  error:err/*se esperaba una estructa de ejecución [y el formato]*/                {:manejadorReportes.reportarError(crearReporte("error", err, ReporteError.SEMANTIC_INVALID_TOTAL_TYPE + concatExpected(), "Semántico"));:}
      ;
 
@@ -269,10 +299,7 @@ exe ::= EJECUTAR:representante PARENTESIS_A CADENA:titulo PARENTESIS_C PUNTO_COM
 //NOTA: si da error al intentar obtener el valor del Símbolo [por lo que se mencionaba en la docu, que al no declarar el tipo, lo tomaban como si tuviera un contenido null [pero hasta donde sé en la práctica anterior no definí un tipo y al recuperar el valor de tipo "token" me devolvía un Objeto, que tenía que parsear ;-; pero no un null, a menos que yo seteara así el contenido...]]
 //NOTA: Ahora que lo pienso bien pude haber formado las listas con los RESULT, solamente debía concatenar los valores separados por comas y luego eso convertirlo al arreglo corresp... pero no sé si al haber error y llegar a la axn del padre que invocó la RP en la que surgió el error el RESULT mantendría el contenido, sería 0, null o empty??? como para aún tener los datos que si estuvieron buenos... [solo con lo de las tuplas si no hubiera podido usar el RESULT xD]
 
+//CAMBIOS
+//ARREGLO
+//al add en lista cadenas no se estaba enviando el valor sino Simbolo...
 
-//entramos a ver lo de la colocación de la línea y col para val3 numéricos [estos van en las var, no en listas, si el # está en una lista, este dato se add después xD]
-//también se va a recordar qué dijiste y cómo se debe setear la líena y col para lo de las listasCadenas, puesto que esta no tiene listas xD para sus líneas y col
-//tb procederáás a ver lo del reseteo de las listas
-    //qué sucede [que vals] obtendría si no las resetearas xD
-//si debes resetear cuando hay errr y dónde
-//si una prod de error evita que se axn algo nec, decidir si eli

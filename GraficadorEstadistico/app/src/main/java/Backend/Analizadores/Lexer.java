@@ -9,7 +9,7 @@ import Backend.Objetos.Auxiliares.Simbolo;
 import static Backend.Analizadores.ParserSym.*;
 import Backend.Manejadores.ManejadorReportes;
 import Backend.Manejadores.ManejadorErroresExtra;
-//import Backend.Objetos.Reportes.ReporteError;//yo supongo que si se debe importar para usar el eqq de ctes static, aunque sea kotlin... solo era para probar que si jala cosas de kotlin en Java xD
+import Backend.Objetos.Reportes.ReporteError;//yo supongo que si se debe importar para usar el eqq de ctes static, aunque sea kotlin... solo era para probar que si jala cosas de kotlin en Java xD
 
 
 // See https://github.com/jflex-de/jflex/issues/222
@@ -24,7 +24,7 @@ public class Lexer implements java_cup.runtime.Scanner {
 
   // Lexical states.
   public static final int YYINITIAL = 0;
-  public static final int CADENA = 2;
+  public static final int STRING = 2;
   public static final int ERROR = 4;
 
   /**
@@ -337,18 +337,20 @@ public class Lexer implements java_cup.runtime.Scanner {
     private ManejadorReportes manejadorReportes = new ManejadorReportes();
     private ManejadorErroresExtra manejadorErroresExtra = new ManejadorErroresExtra(manejadorReportes);
 
-    private Simbolo symbol(int tipo, Object valor, boolean conCompania){
+    private Symbol symbol(int tipo, Object valor, boolean conCompania){
         Simbolo simboloActual = new Simbolo (tipo, yyline+1, yycolumn+1, valor, (conCompania)?simboloAnterior:null);        
 
         if(simboloAnterior != null && requeriaCompania){
             simboloAnterior.setSiguiente(simboloActual);
         }
 
+        simboloAnterior = simboloActual;
         requeriaCompania = conCompania;
-        return simboloActual;
+        return new Symbol(tipo, yyline+1, yycolumn+1, simboloActual);//al no enviársele valor para left y right supongo [me parece razonable] que en el parser no se pueda usar ...left y ..right, puesto que no hay datos y aunque en todo caso se pudiera, no daría la fila y columna, sino quizá 0, 1 o error...
     }
 
-    private Symbol acccionReservada(int tipo){//por el momneot es void xD        
+    private Symbol acccionReservada(int tipo){//por el momneot es void xD 
+        System.out.println("[L] reservada ->"+ yytext());       
         return symbol(tipo, yytext(), false);    
     }    
 
@@ -357,11 +359,13 @@ public class Lexer implements java_cup.runtime.Scanner {
             accionParadaParaError();
         }
 
+        System.out.println("[L] símbolo ->"+ yytext() +" T: " +((yytext().equals(":"))?DOS_PUNTOS:((yytext().equals(","))?COMA:((yytext().equals("{"))?LLAVE_A:((yytext().equals("}"))?LLAVE_C:((yytext().equals(";"))?PUNTO_COMA:((yytext().equals("["))?CORCHETE_A:CORCHETE_C)))))));
         return symbol(((yytext().equals(":"))?DOS_PUNTOS:((yytext().equals(","))?COMA:((yytext().equals("{"))?LLAVE_A:((yytext().equals("}"))?LLAVE_C:((yytext().equals(";"))?PUNTO_COMA:((yytext().equals("["))?CORCHETE_A:CORCHETE_C)))))), yytext(), false);                 
     }//por si acaso miras que si te es posible add SA a ERROR sin generar problemas al formar los tokens aquí y analizar las RP en el parser
 
     private int establecerMenosOResta(){
-        return (simboloAnterior != null && simboloAnterior.sym != NUMERO)?MENOS:RESTA;//porque si aparece un número antes, entonces será 
+        System.out.println("[L] simbolo ->"+ yytext());
+        return (simboloAnterior != null && simboloAnterior.getSym() != NUMERO)?MENOS:RESTA;//porque si aparece un número antes, entonces será 
     }
 
     private void accionProcesarError(){
@@ -375,8 +379,9 @@ public class Lexer implements java_cup.runtime.Scanner {
     }
 
     private void accionParadaParaError(){//aquí es donde se imprime todo lo concatenado que se clasificó como error...
-        manejadorErroresExtra.detectarReservadadMalFormada(symbol(error, string.toString(), false));//si es que la lista de símbolos no me ayuda por completo [puesto que solo da los siguientes...], entonces lo cb a true xD
-        //System.out.println("error -> " + ReporteError.LEXER_INVALID_WORD +"\n");//si funcionó el llamado a la cte static de kotlin xD uwu
+    System.out.println("[L] error -> " + ReporteError.LEXER_INVALID_WORD +"\n");//si funcionó el llamado a la cte static de kotlin xD uwu
+        //si la línea y columna que aprecen son irrazonables para los errores, ahí te acuerdas que esos valores los seteaste aquí...         
+        manejadorErroresExtra.detectarReservadadMalFormada(new Simbolo(error, yyline+1, yycolumn+1, string.toString(), null));//si es que la lista de símbolos no me ayuda por completo [puesto que solo da los siguientes...], entonces lo cb a true xD        
         yybegin(YYINITIAL);
     }
 
@@ -801,12 +806,12 @@ public class Lexer implements java_cup.runtime.Scanner {
             // fall through
           case 31: break;
           case 3:
-            { string.setLength(0); yybegin(CADENA);
+            { string.setLength(0); yybegin(STRING);
             }
             // fall through
           case 32: break;
           case 4:
-            { return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?establecerMenosOResta():((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);
+            { System.out.println("[L] simbolo-> "+ yytext());return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?establecerMenosOResta():((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);
             }
             // fall through
           case 33: break;
@@ -816,7 +821,7 @@ public class Lexer implements java_cup.runtime.Scanner {
             // fall through
           case 34: break;
           case 6:
-            { return symbol(NUMERO, new Double(yytext()), false);
+            { System.out.println("[L] numero ->"+ yytext());return symbol(NUMERO, new Double(yytext()), false);
             }
             // fall through
           case 35: break;
@@ -826,7 +831,7 @@ public class Lexer implements java_cup.runtime.Scanner {
             // fall through
           case 36: break;
           case 8:
-            { yybegin(YYINITIAL);return symbol(CADENA, string.toString(), false);
+            { yybegin(YYINITIAL);System.out.println("cadena ->"+ string.toString() + " T: "+CADENA);return symbol(CADENA, new String(string) /*string.toString()*/, false);
             }
             // fall through
           case 37: break;

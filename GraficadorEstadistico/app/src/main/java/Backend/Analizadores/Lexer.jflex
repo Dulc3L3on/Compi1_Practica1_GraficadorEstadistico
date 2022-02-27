@@ -5,7 +5,7 @@ import Backend.Objetos.Auxiliares.Simbolo;
 import static Backend.Analizadores.ParserSym.*;
 import Backend.Manejadores.ManejadorReportes;
 import Backend.Manejadores.ManejadorErroresExtra;
-//import Backend.Objetos.Reportes.ReporteError;//yo supongo que si se debe importar para usar el eqq de ctes static, aunque sea kotlin... solo era para probar que si jala cosas de kotlin en Java xD
+import Backend.Objetos.Reportes.ReporteError;//yo supongo que si se debe importar para usar el eqq de ctes static, aunque sea kotlin... solo era para probar que si jala cosas de kotlin en Java xD
 
 %%
 //Código de usuario
@@ -42,18 +42,20 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
     private ManejadorReportes manejadorReportes = new ManejadorReportes();
     private ManejadorErroresExtra manejadorErroresExtra = new ManejadorErroresExtra(manejadorReportes);
 
-    private Simbolo symbol(int tipo, Object valor, boolean conCompania){
+    private Symbol symbol(int tipo, Object valor, boolean conCompania){
         Simbolo simboloActual = new Simbolo (tipo, yyline+1, yycolumn+1, valor, (conCompania)?simboloAnterior:null);        
 
         if(simboloAnterior != null && requeriaCompania){
             simboloAnterior.setSiguiente(simboloActual);
         }
 
+        simboloAnterior = simboloActual;
         requeriaCompania = conCompania;
-        return simboloActual;
+        return new Symbol(tipo, yyline+1, yycolumn+1, simboloActual);//al no enviársele valor para left y right supongo [me parece razonable] que en el parser no se pueda usar ...left y ..right, puesto que no hay datos y aunque en todo caso se pudiera, no daría la fila y columna, sino quizá 0, 1 o error...
     }
 
-    private Symbol acccionReservada(int tipo){//por el momneot es void xD        
+    private Symbol acccionReservada(int tipo){//por el momneot es void xD 
+        System.out.println("[L] reservada ->"+ yytext());       
         return symbol(tipo, yytext(), false);    
     }    
 
@@ -62,11 +64,13 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
             accionParadaParaError();
         }
 
+        System.out.println("[L] símbolo ->"+ yytext() +" T: " +((yytext().equals(":"))?DOS_PUNTOS:((yytext().equals(","))?COMA:((yytext().equals("{"))?LLAVE_A:((yytext().equals("}"))?LLAVE_C:((yytext().equals(";"))?PUNTO_COMA:((yytext().equals("["))?CORCHETE_A:CORCHETE_C)))))));
         return symbol(((yytext().equals(":"))?DOS_PUNTOS:((yytext().equals(","))?COMA:((yytext().equals("{"))?LLAVE_A:((yytext().equals("}"))?LLAVE_C:((yytext().equals(";"))?PUNTO_COMA:((yytext().equals("["))?CORCHETE_A:CORCHETE_C)))))), yytext(), false);                 
     }//por si acaso miras que si te es posible add SA a ERROR sin generar problemas al formar los tokens aquí y analizar las RP en el parser
 
     private int establecerMenosOResta(){
-        return (simboloAnterior != null && simboloAnterior.sym != NUMERO)?MENOS:RESTA;//porque si aparece un número antes, entonces será 
+        System.out.println("[L] simbolo ->"+ yytext());
+        return (simboloAnterior != null && simboloAnterior.getSym() != NUMERO)?MENOS:RESTA;//porque si aparece un número antes, entonces será 
     }
 
     private void accionProcesarError(){
@@ -80,8 +84,9 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
     }
 
     private void accionParadaParaError(){//aquí es donde se imprime todo lo concatenado que se clasificó como error...
-        manejadorErroresExtra.detectarReservadadMalFormada(symbol(error, string.toString(), false));//si es que la lista de símbolos no me ayuda por completo [puesto que solo da los siguientes...], entonces lo cb a true xD
-        //System.out.println("error -> " + ReporteError.LEXER_INVALID_WORD +"\n");//si funcionó el llamado a la cte static de kotlin xD uwu
+    System.out.println("[L] error -> " + ReporteError.LEXER_INVALID_WORD +"\n");//si funcionó el llamado a la cte static de kotlin xD uwu
+        //si la línea y columna que aprecen son irrazonables para los errores, ahí te acuerdas que esos valores los seteaste aquí...         
+        manejadorErroresExtra.detectarReservadadMalFormada(new Simbolo(error, yyline+1, yycolumn+1, string.toString(), null));//si es que la lista de símbolos no me ayuda por completo [puesto que solo da los siguientes...], entonces lo cb a true xD        
         yybegin(YYINITIAL);
     }
 
@@ -90,7 +95,7 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
     }
 %}
 
-%state CADENA ERROR
+%state STRING ERROR
 
 %%
 //Reglas léxicas
@@ -117,17 +122,17 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
 <YYINITIAL>{
     {comentario}           {/*se ignora*/}//No debería hacer match con ninguna palabra reservada porque están declaras antes y de todos modos si apareciera comentada, siempre tendría un #, lo cual haría que entre aquí xD
 
-    {numero}               {return symbol(NUMERO, new Double(yytext()), false);}//son los signos de operación en sí quienes requieren del anterior
+    {numero}               {System.out.println("[L] numero ->"+ yytext());return symbol(NUMERO, new Double(yytext()), false);}//si hay problemas al enviar un DOuble, cuando el número sea un Int, entonces envía un String y allá loconvertirás a DOuble, no creo que de problema si no tiene ese String un punto decimal...
 
-    {operadores}           {return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?establecerMenosOResta():((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);}
+    {operadores}           {System.out.println("[L] simbolo-> "+ yytext());return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?establecerMenosOResta():((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);}
 
-    \"                     {string.setLength(0); yybegin(CADENA);}//tengo que hacer que la entrada se convierta a un tipo específico, sino podría detectar como errónea la codificación de un caracter equivalente en otro "sistema" o modo de codificación, como sucedió con las comillas            
+    \"                     {string.setLength(0); yybegin(STRING);}//tengo que hacer que la entrada se convierta a un tipo específico, sino podría detectar como errónea la codificación de un caracter equivalente en otro "sistema" o modo de codificación, como sucedió con las comillas            
 
     {espacioEnBlanco}      {/*se ignora*/}
 }
 
- <CADENA> {
-      \"                       { yybegin(YYINITIAL);return symbol(CADENA, string.toString(), false);}//devulve el contenido dentro de las "" puesto que eso es lo que interesa xD
+ <STRING> {
+      \"                       { yybegin(YYINITIAL);System.out.println("cadena ->"+ string.toString() + " T: "+CADENA);return symbol(CADENA, new String(string) /*string.toString()*/, false);}//devulve el contenido dentro de las "" puesto que eso es lo que interesa xD
       [^\n\r\"\\]+             { string.append( yytext()); }
       //esto es por si caso colocaron literalmente esos símbolos, con las comillas se da más a notar lo que intento decir xD creo que es por eso :v xD
       \\t                      { string.append('\t'); }
@@ -159,3 +164,5 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
 //cuando no, o declara de nuevo esa expre reg pero en el cuerpo de ERROR y addle la axn de ERROR directamente
 //pero no se que errores podría provocar... quizá por el momento dejémoslo así...
 
+
+//ya tiene arreglado el problema con el Simbolo...

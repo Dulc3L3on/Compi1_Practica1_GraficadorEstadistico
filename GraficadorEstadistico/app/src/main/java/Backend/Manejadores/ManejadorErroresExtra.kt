@@ -20,7 +20,7 @@ class ManejadorErroresExtra(manejadorReportes: ManejadorReportes){
             for (item in  this.analizadorSemantico.getPalabrasReservadas()){
                 if(item.length*0.7 <= palabraIrreconocida.value.toString().length){
                     if(palabraIrreconocida.value.toString().contains(item.substring(0,((if (item.length==3) 3
-                        else ceil(item.length*0.69)) as Int)),false)){
+                        else ceil(item.length*0.69)).toInt())),false)){
 
                         irreconocida = false
                     }

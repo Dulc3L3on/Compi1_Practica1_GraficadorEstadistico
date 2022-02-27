@@ -2,7 +2,8 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         google()
-        mavenCentral()
+        mavenCentral()/*es aquí donde debes setear lo otro que piden en MP chart... pero lo vas a hacer si después de arreglar lo que debes, con solo add la imple sigue sin funcionar...*/
+        maven { url 'https://jitpack.io' }
     }
 }
 dependencyResolutionManagement {
@@ -11,6 +12,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         mavenLocal()
+        maven { url 'https://jitpack.io' }
+
     }
 }
 rootProject.name = "GraficadorEstadistico"

@@ -23,6 +23,8 @@ class ManejadorGraficacion(manejadorErroresExtra:ManejadorErroresExtra) {
         if(!this.manejadorErroresExtra.hubieronErrores()){
             addGrafica(tipoGrafica.value.toString())
         }
+        //se limpia la tabla de símbolos, para que al llegar la otra estructura, all esté preparado para ella...
+        this.analizadorSemantico.clearTemp()
     }
 
     private fun addGrafica(tipo:String){
@@ -61,7 +63,7 @@ class ManejadorGraficacion(manejadorErroresExtra:ManejadorErroresExtra) {
     }
 
     //se utilizará en la axn de la RP "exe" del parser
-    fun analizarEjecucion(atributoTitulo:Atributo){
+    fun analizarEjecucion(atributoTitulo:Atributo){//Por qué da null Pointer???? no se supone que ya lo habíamo s arreglado :v
         if(this.manejadorErroresExtra.verificarSeccionEjecucion(atributoTitulo)){
             this.listaDeEjecucion.add(getGrafica((atributoTitulo.contenido as ContenidoCadena).cadena)!!)//Es un hecho que no será null por la verif que exe el if xD
         }

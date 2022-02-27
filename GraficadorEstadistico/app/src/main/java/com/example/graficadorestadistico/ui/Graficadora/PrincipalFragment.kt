@@ -12,6 +12,7 @@ import Backend.Objetos.Reportes.ReporteError
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,7 +36,7 @@ class PrincipalFragment : Fragment() {
     private lateinit var manejadorGraficacion: ManejadorGraficacion
 
     private lateinit var contenedorFragments: ContenedorFragment
-    private lateinit var editText: EditText
+    private lateinit var editText: /*EditText*/TextView
     private lateinit var boton_graficar: Button
     private lateinit var tvw_ubicacion:TextView
 
@@ -71,7 +72,9 @@ class PrincipalFragment : Fragment() {
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 mostrarPosicionCareta()
             }
-            override fun afterTextChanged(p0: Editable?) {}
+            override fun afterTextChanged(p0: Editable?) {
+                mostrarPosicionCareta()
+            }
         })//hizo falta el keyUP, por si acaso conectan un teclado [o fuera una VM xD, como es el caso tuyo (lo digo por el emu xD)]
 
         boton_graficar.setOnClickListener{ view ->
@@ -113,12 +116,6 @@ class PrincipalFragment : Fragment() {
 
             setResultados(this.manejadorGraficacion.getListaEjecucion(), manejadorReportes.getListaReporteOperaciones(),
                 manejadorReportes.getCantidadGraficas())
-            //se setea una var para que cuadno se de click en la tab setee los datos que se deben visualizar [una imagen o algo que diga que no se generó algo debido a los errores
-            //o se exe el Intent, no sé tengo que ver cómo enviar datos cuando se trata de un nav tab
-            //bueno ahorita se me ocurre que quizá se deba invocar los setter de cada fragment para enviar las listas
-            //entocnes cada fragment debe tener dos setter, uno para datos y otro para cb el valor de la var que le indique que no debe mostrar algo, solo info que no hay nada porque... ya la epxlica xD
-
-            //De alls modos debes ver cómo enviar datos con las tab, si se puede con los setter nice xD, pero de todos modos míralo porque debes hacer que se mire el contenido solo cuando se vaya al fragment en cuestión, no hacer que se sobreponga!!!
         }else{
             setErrores(this.manejadorReportes.getListaErrores())
             //se usa el setter para enviar los rep de error
@@ -136,6 +133,7 @@ class PrincipalFragment : Fragment() {
         bundle.putBoolean("errores", false)
 
         parentFragmentManager.setFragmentResult("resultados", bundle)
+        Log.i("graficas definidas", "se ha bundleado xD")
     }
 
     private fun setErrores(errores:ArrayList<ReporteError>){
@@ -145,6 +143,7 @@ class PrincipalFragment : Fragment() {
         bundle.putBoolean("errores", true)
 
         parentFragmentManager.setFragmentResult("resultados", bundle)//que irá a pasr por haberle dejado el mismo nombre?? se add a los demás y en el caso del boolean, reemplazaría o devolvera un error por el simple hecho de llamarse igual, o no sucederá nada puesto que ese bundle ya desapareció...???
+        Log.i("errores en input", "se han bundleado xD")
     }
 
     //métodos para interfaz

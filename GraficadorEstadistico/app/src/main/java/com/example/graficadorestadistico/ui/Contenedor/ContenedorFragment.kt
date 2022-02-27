@@ -12,13 +12,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager.widget.ViewPager
 import com.example.graficadorestadistico.R
 import com.example.graficadorestadistico.databinding.FragmentContenedorBinding
+import com.example.graficadorestadistico.ui.Adapter.PagerAdapter
 import com.example.graficadorestadistico.ui.Graficadora.PrincipalFragment
 import com.example.graficadorestadistico.ui.Reportes.ReportesFragment
-import com.example.graficadorestadistico.ui.Adapter.PagerAdapter
-import com.example.graficadorestadistico.ui.ManualUso.ManualUsoFragment
-import com.example.graficadorestadistico.ui.Resultados.ResultadoFragment
 import com.example.graficadorestadistico.ui.Resultados.ResultadosFragment
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayout.TabLayoutOnPageChangeListener
 
 class ContenedorFragment(): Fragment() {
     private lateinit var fragments:ArrayList<Fragment>
@@ -52,7 +51,7 @@ class ContenedorFragment(): Fragment() {
         tabs = root.findViewById(R.id.menutabs)
         viewPager = root.findViewById(R.id.pagetabs)
 
-
+        inicializarTabs()
 
   //      tabs.addTab(tabs.newTab().setIcon(R.drawable.ic_menu_gallery).setText("Graficadora"))
  //       tabs.addTab(tabs.newTab().setIcon(R.drawable.ic_menu_gallery).setText("Graficadora"))
@@ -74,7 +73,8 @@ class ContenedorFragment(): Fragment() {
             }
         })
 
-        inicializarTabs()//Estaba antes de root
+        this.viewPager!!.adapter = this.adapter
+        viewPager.addOnPageChangeListener(TabLayoutOnPageChangeListener(tabs))
 
         return root
     }
@@ -85,25 +85,22 @@ class ContenedorFragment(): Fragment() {
         //setear la tab de PrincipalFragment adapter!!.setTab(PrincipalFragment() as Fragment, "Graficadora")
         //Agregar el adapter en el viewPager:  this.viewPager!!.adapter = this.adapter
 
+        adapter = PagerAdapter(requireActivity().supportFragmentManager)
+        adapter.setTab(PrincipalFragment() as Fragment, "Graficadora")
+        adapter.setTab(ResultadosFragment() as Fragment, "Graficas")
+        adapter.setTab(ReportesFragment() as Fragment, "Resumen")
 
         //de alguna no jala las tabs si las clases de los fragment, tienen algo más que no sea el OnCreate y el OnCreateView... lo digo por lo que sucedió con resultado... [que al crear una clase que no tuviera los parámetros para tener el método static de createInstance, ahí si me jalo la app...
-            tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_chart).setText("Graficadora"))
-            tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_logo).setText("Graficas"))
-            tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_reportes).setText("Resumen"))
-            tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_reportes_error).setText("Errores"))
-
-            adapter = PagerAdapter(requireActivity().supportFragmentManager)
-            adapter.setTab(PrincipalFragment() as Fragment, "Graficadora")
-            adapter.setTab(ResultadosFragment() as Fragment, "Graficas")
-            adapter.setTab(ReportesFragment() as Fragment, "Resumen")
-            adapter.setTab(ReportesFragment() as Fragment, "Errores")
+        tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_chart).setText("Graficadora"))
+        tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_logo).setText("Graficas"))
+        tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_reportes).setText("Resumen"))
+//      tabs.addTab(tabs.newTab().setIcon(R.drawable.vector_reportes_error).setText("Errores"))
 
 //        this.principalFragment = PrincipalFragment()
 
 //        adapter!!.setTab(PrincipalFragment() as Fragment, "Graficadora")
 
 //        this.principalFragment!!.setContenedorFragments(this)
-        this.viewPager!!.adapter = this.adapter
     }
 
     //estos los invocará el principlaFragment

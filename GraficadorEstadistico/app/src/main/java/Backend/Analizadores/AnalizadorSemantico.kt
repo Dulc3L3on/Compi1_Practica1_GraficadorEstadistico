@@ -62,7 +62,7 @@ class AnalizadorSemantico(manejadorReportes: ManejadorReportes) {
     fun verificarAtributos(){//si lo de total es sintác, entonce este método debe estar directamente en el cuerpo de manejadorErroresExtra
         verificarTitulo()
 
-        if((this.tablaDeSimbolos.getTipoGrafica() as Simbolo).value.toString() == "Barras"){
+        if(this.tablaDeSimbolos.getTipoGrafica() == "Barras"){
             verficarExistenciaAtributosBarra()
         }else{
             verificarExistenciaAtributosPie()
@@ -199,10 +199,9 @@ class AnalizadorSemantico(manejadorReportes: ManejadorReportes) {
             var sumatoria:Double = 0.0
 
             for (elemento in datosAUnir.indices){
-                tupla = datosAUnir[elemento]
-                for (pareja in tupla){//se obtiene el IntArray
-                    sumatoria += (pareja as DoubleArray)[1]
-                }
+                tupla = datosAUnir[elemento]//se obtiene el DoubleArray
+                sumatoria += tupla[1]
+
             }
             if(sumatoria > total){
                 this.manejadorReportes.reportarError(ReporteError(sumatoria.toString(),
@@ -217,5 +216,5 @@ class AnalizadorSemantico(manejadorReportes: ManejadorReportes) {
     fun getAtributosGraficoBarras():Array<String>{return this.tablaDeSimbolos.getAtributosBarras()}
     fun getAtributosGraficoPie():Array<String>{return this.tablaDeSimbolos.getAtributosBarras()}
     fun getTitulosRegistrados():ArrayList<ContenidoCadena>{return this.tablaDeSimbolos.getTitulosRegistrados()}
-    fun limpiarRegistrosTemporalesTablaSimbolos(){this.tablaDeSimbolos.clearTemp()}
+    fun clearTemp(){this.tablaDeSimbolos.clearTemp()}//en la tabla de símbolos xD
 }
