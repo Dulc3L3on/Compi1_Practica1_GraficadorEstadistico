@@ -344,7 +344,7 @@ class CUP$Parser$actions {
         String lista = "";
 
         for(int idActual = 0; idActual < tokensAMostrar; idActual++){
-            lista += symbl_name_from_id(expected.get(idActual));
+            lista += symbl_name_from_id(expected.get(idActual)) + " ";
         }
         return lista;
     }   
@@ -581,7 +581,17 @@ private void mostrarContenidoListasCadenas(){
           case 16: // tupla ::= tupla COMA LLAVE_A valNumerico COMA valNumerico LLAVE_C 
             {
               Object RESULT =null;
-
+		int repTuplaleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).left;
+		int repTuplaright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)).right;
+		Simbolo repTupla = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-4)).value;
+		int valorXleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).left;
+		int valorXright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)).right;
+		Double valorX = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-3)).value;
+		int valorYleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).left;
+		int valorYright = ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)).right;
+		Double valorY = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.elementAt(CUP$Parser$top-1)).value;
+		tuplas.add(new double[]{valorX, valorY});
+                                                                                                listaLineas.add(repTupla.getLeft()); listaColumnas.add(repTupla.getRight());
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("tupla",7, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-6)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -848,7 +858,10 @@ private void mostrarContenidoListasCadenas(){
           case 38: // listaCadenas ::= listaCadenas COMA CADENA 
             {
               Object RESULT =null;
-
+		int cadenaleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
+		int cadenaright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
+		Simbolo cadena = (Simbolo)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		listaCadenas.add((String) cadena.getValue());
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("listaCadenas",13, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
@@ -881,7 +894,11 @@ private void mostrarContenidoListasCadenas(){
           case 41: // listaNumeros ::= listaNumeros COMA valNumerico 
             {
               Object RESULT =null;
-
+		int valorleft = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).left;
+		int valorright = ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()).right;
+		Double valor = (Double)((java_cup.runtime.Symbol) CUP$Parser$stack.peek()).value;
+		listaNumeros.add(valor);
+                                                                              listaLineas.add(filaContenido); listaColumnas.add(columnaContenido);
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("listaNumeros",14, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;

@@ -24,6 +24,7 @@ class TablaDeSimbolos {
         this.atributos.add(atributo)
     }
 
+    //es para obtener los atributos de la TS!!
     fun getContenidoDeAtributo(nombreAtributo:String): Contenido {
         var atributoAuxiliar:Atributo? = null
 
@@ -31,7 +32,8 @@ class TablaDeSimbolos {
             if(atributo.simbolo.value.toString() == nombreAtributo){
                 atributoAuxiliar = atributo//solo la 1er aparición porque para qué voy a estar app las demás verificaciones si en primer lugar todos los datos extra tendrá que eliminarlos...
                 this.atributos.remove(atributoAuxiliar)//así la búsqueda posterior se reduce xD
-            }
+                break//paro porque se supone que si llegó aquí es porque no hay repitencias y tampoco ausencias xD
+            }//si te vuelve a dar error en addGrafica y ese es de tipo ConcurrentModification, entonces puedes hacer dos cosas, usar el for normal [imagino que es con el que puedes acceder a los índices, en el caso de kotlin] o crear tra lista, asignarle a ella los valores y obtener los índices de la lista auxiliar para hacer la eli [stackOver dice que se recomienda usar remove xD] en la lista original, bueno esto en caso que tb el for que accede a los índices diera ese prob, pero no creo que con el break que le addste pueda surgir de nuevo esa exception xD
         }
         return atributoAuxiliar!!.contenido//nunca se devolverá un null puesto que cuando se utiliza este método es porque están all the atributes
     }

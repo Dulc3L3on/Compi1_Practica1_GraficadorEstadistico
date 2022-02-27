@@ -379,7 +379,7 @@ public class Lexer implements java_cup.runtime.Scanner {
     }
 
     private void accionParadaParaError(){//aquí es donde se imprime todo lo concatenado que se clasificó como error...
-    System.out.println("[L] error -> " + ReporteError.LEXER_INVALID_WORD +"\n");//si funcionó el llamado a la cte static de kotlin xD uwu
+    System.out.println("[L] error -> "+ string.toString() + ReporteError.LEXER_INVALID_WORD +"\n");//si funcionó el llamado a la cte static de kotlin xD uwu
         //si la línea y columna que aprecen son irrazonables para los errores, ahí te acuerdas que esos valores los seteaste aquí...         
         manejadorErroresExtra.detectarReservadadMalFormada(new Simbolo(error, yyline+1, yycolumn+1, string.toString(), null));//si es que la lista de símbolos no me ayuda por completo [puesto que solo da los siguientes...], entonces lo cb a true xD        
         yybegin(YYINITIAL);

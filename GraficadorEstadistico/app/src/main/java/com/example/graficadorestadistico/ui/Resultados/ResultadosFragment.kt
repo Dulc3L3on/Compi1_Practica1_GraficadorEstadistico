@@ -22,6 +22,9 @@ import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.utils.ColorTemplate
+import Backend.Objetos.Auxiliares.LabelFormatter
+import android.widget.TableRow
+import androidx.core.view.size
 
 class ResultadosFragment:Fragment() {
     private lateinit var linearLayout:LinearLayout
@@ -70,7 +73,7 @@ class ResultadosFragment:Fragment() {
 
                 generarGraficas()
                 pasarInformacion_Reportes((bundle.getSerializable("reporteGraficasDefinidas") as IntArray),
-                    (bundle.getSerializable("reporteGraficasDefinidas") as ArrayList<Reporte>))//yo diría que aquí, pues en este punto ya habrá terminado all o que debe hacer este fragment...
+                    (bundle.getSerializable("reporteOperaciones") as ArrayList<Reporte>))//yo diría que aquí, pues en este punto ya habrá terminado all o que debe hacer este fragment...
             }else{
                 this.tvw_msje?.text = "Nada que graficar"
                 this.linearLayout.addView(this.tvw_msje)
@@ -84,8 +87,8 @@ class ResultadosFragment:Fragment() {
     private fun pasarInformacion_Reportes(reporteGraficasDefinidas:IntArray, reporteOperaciones:ArrayList<Reporte>){
         var bundle:Bundle = Bundle()
 
-        bundle.putSerializable("reporteOperaciones", reporteOperaciones)
         bundle.putSerializable("reporteGraficasDefinidas", reporteGraficasDefinidas)
+        bundle.putSerializable("reporteOperaciones", reporteOperaciones)
         bundle.putBoolean("errores", false)
 
         parentFragmentManager.setFragmentResult("resultados_reportes", bundle)
@@ -107,8 +110,8 @@ class ResultadosFragment:Fragment() {
 
         for(grafica in this.graficas){
             when(grafica){
-                is Barras -> this.linearLayout.addView(generarGraficoBarras(grafica, numeroGrafica))
-                is Pie -> this.linearLayout.addView(generarGraficoPie(grafica, numeroGrafica))
+                is Barras -> this.linearLayout.addView(generarGraficoBarras(grafica, numeroGrafica), this.linearLayout.width, 1200)
+                is Pie -> this.linearLayout.addView(generarGraficoPie(grafica, numeroGrafica), this.linearLayout.width, 1200)
             }
             numeroGrafica++
         }
@@ -120,11 +123,13 @@ class ResultadosFragment:Fragment() {
         var datos:ArrayList<BarEntry> = this.reunirDatos_Barras(grafica)
 
         var barDataSet:BarDataSet = BarDataSet(datos, grafica.titulo)
-        barDataSet.setColor(ColorTemplate.PASTEL_COLORS[0])//de seguro hay 0 xD
+        barDataSet.setColors(ColorTemplate.createColors(ColorTemplate.JOYFUL_COLORS))//de seguro hay 0 xD
         barDataSet.setValueTextColor(Color.BLACK)
         barDataSet.valueTextSize = 16f
 
         var barData:BarData = BarData(barDataSet)
+
+        barChart.xAxis.valueFormatter = LabelFormatter(grafica.ejeX)
 
         barChart.setFitBars(true)
         barChart.data = barData
@@ -138,25 +143,30 @@ class ResultadosFragment:Fragment() {
         var datos:ArrayList<BarEntry> = ArrayList()
 
         for (elemento in grafica.ejeX.indices){
-            datos.add(BarEntry(((grafica as Barras).ejeX.get(elemento)) as Float,
-                ((grafica as Barras).ejeY)as Float))
+            datos.add(BarEntry((elemento+1).toFloat(),//aquí van números ordinales, para indicar si las barras aparecerán una la par de otra xD
+                (grafica.ejeY.get(elemento)).toFloat()))
         }
         return datos
     }
 
     private fun generarGraficoPie(grafica: Pie, numeroGrafica:Int):PieChart{
+        //var pieChart:PieChart = LayoutInflater.from(context).inflate(R.id, null, false) as PieChart
         var pieChart: PieChart = PieChart(context)
+        pieChart.holeRadius = 35f
 
         var datos:ArrayList<PieEntry> = this.reunirDatos_Pie(grafica)
 
         var pieDataSet:PieDataSet = PieDataSet(datos, grafica.titulo)
-        pieDataSet.setColor(ColorTemplate.PASTEL_COLORS[1])//de seguro hay 0 xD
+        pieDataSet.setColors(ColorTemplate.createColors(ColorTemplate.PASTEL_COLORS))//de seguro hay 0 xD
         pieDataSet.setValueTextColor(Color.BLACK)
         pieDataSet.valueTextSize = 16f
 
         var pieData:PieData = PieData(pieDataSet)
 
         pieChart.data = pieData
+        if(grafica.tipo == "Porcentaje"){
+            pieChart.setUsePercentValues(true)
+        }
         pieChart.description.text = "Grafica #"+numeroGrafica.toString()
         pieChart.centerText = grafica.titulo
         pieChart.animate()
@@ -166,13 +176,25 @@ class ResultadosFragment:Fragment() {
 
     private fun reunirDatos_Pie(grafica:Pie):ArrayList<PieEntry>{
         var datos:ArrayList<PieEntry> = ArrayList()
+        var sumatoria:Double = 0.0 //ayuda a hacer el cálculo del sobrante para así emplear la etiqueta especificada si en dado caso fuera nec xD
 
         for (elemento in grafica.valores.indices){
-            datos.add(PieEntry(((grafica as Pie).valores.get(elemento)) as Float,
-                ((grafica as Pie).etiquetas)))
+            var cantidadActual:Double =(if (grafica.tipo == "Cantidad") grafica.valores.get(elemento)
+            else (360*((grafica.valores.get(elemento))/100)))
+
+            datos.add(PieEntry(cantidadActual.toFloat(),
+                ((grafica).etiquetas[elemento])))
+
+            sumatoria += cantidadActual
         }
+
+        if((grafica.total - sumatoria) > 0){
+            datos.add(PieEntry((grafica.total-sumatoria).toFloat(), grafica.extra))
+        }
+
         return datos
     }
+
 
     //Pasos que hiciste para que funcionara el envío de datos
     //1. usaste parentFragmenteManager antes de tener setFragmentResultListener y luego en lugar de

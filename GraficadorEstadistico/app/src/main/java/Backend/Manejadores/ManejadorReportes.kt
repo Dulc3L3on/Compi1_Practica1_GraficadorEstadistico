@@ -9,7 +9,7 @@ import Backend.Objetos.Reportes.ReporteError
 class ManejadorReportes {
     private var listaReportesOperaciones = ArrayList<Reporte>()
     private var listadoErrores = ArrayList<ReporteError>()
-    private var cantidadGraficas:IntArray = IntArray(2)//si da error es porque lo debes inicializar: {i -> 0}
+    private var cantidadGraficas:IntArray = IntArray(2){ i -> 0}//0 -> Barras, 1 -> Pie
 
     fun reportarOperacion(reporteOperacion:Reporte){
         listaReportesOperaciones.add(reporteOperacion)

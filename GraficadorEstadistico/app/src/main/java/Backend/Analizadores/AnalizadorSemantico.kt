@@ -214,7 +214,7 @@ class AnalizadorSemantico(manejadorReportes: ManejadorReportes) {
     //este es para uso externo, lo usa el manajadorErrroresExtra [por las recomendaciones]
     fun getPalabrasReservadas():Array<String>{return this.tablaDeSimbolos.getPalabrasReservadas()}
     fun getAtributosGraficoBarras():Array<String>{return this.tablaDeSimbolos.getAtributosBarras()}
-    fun getAtributosGraficoPie():Array<String>{return this.tablaDeSimbolos.getAtributosBarras()}
+    fun getAtributosGraficoPie():Array<String>{return this.tablaDeSimbolos.getAtributosPie()}
     fun getTitulosRegistrados():ArrayList<ContenidoCadena>{return this.tablaDeSimbolos.getTitulosRegistrados()}
-    fun clearTemp(){this.tablaDeSimbolos.clearTemp()}//en la tabla de símbolos xD
+    fun clearTemp(){this.tablaDeSimbolos.clearTemp()}//tb habrá que llamarlo en alguna RP, por algún error que peuda existir, claro siempre y cuadno se sepa que se va a empezar a estudiar otra gráfica...
 }

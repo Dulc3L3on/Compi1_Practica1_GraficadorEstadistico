@@ -46,7 +46,7 @@ class ManejadorGraficacion(manejadorErroresExtra:ManejadorErroresExtra) {
                 (this.analizadorSemantico.getContenidoDeAtributo(atributosGraficoPie[0]) as ContenidoListaCadenas).listaCadenas,
                 (this.analizadorSemantico.getContenidoDeAtributo(atributosGraficoPie[1]) as ContenidoListaNumeros).listaNumeros,
                 tipoTotal,
-                (if(tipoTotal == "Cantidad") (this.analizadorSemantico.getContenidoDeAtributo("total") as ContenidoNumero).numero else 360.0),
+                (if(tipoTotal == "Cantidad") (this.analizadorSemantico.getContenidoDeAtributo("total") as ContenidoNumero).numero else 360.0),//se envía 360, pues así se puede hallar la diferencia [para hallar el faltante] a partir de siempre el dato de esta var xD
                 ((this.analizadorSemantico.getContenidoDeAtributo(atributosGraficoPie[4]) as ContenidoCadena).cadena)
             ))
         }
@@ -63,8 +63,8 @@ class ManejadorGraficacion(manejadorErroresExtra:ManejadorErroresExtra) {
     }
 
     //se utilizará en la axn de la RP "exe" del parser
-    fun analizarEjecucion(atributoTitulo:Atributo){//Por qué da null Pointer???? no se supone que ya lo habíamo s arreglado :v
-        if(this.manejadorErroresExtra.verificarSeccionEjecucion(atributoTitulo)){
+    fun analizarEjecucion(atributoTitulo:Atributo){//puesto que si hubieron errores, solo hay que reportar el error de que no existe esa gráfica o ninguna, no es necesario addlas a la pila de exe puesto que no habrá tal exe xD
+        if(this.manejadorErroresExtra.verificarSeccionEjecucion(atributoTitulo) && !this.manejadorErroresExtra.hubieronErrores()){
             this.listaDeEjecucion.add(getGrafica((atributoTitulo.contenido as ContenidoCadena).cadena)!!)//Es un hecho que no será null por la verif que exe el if xD
         }
     }

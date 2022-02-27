@@ -78,13 +78,15 @@ class ReportesFragment() : Fragment() {
 
     private fun generarReporte_Resultados(){
         generarReporte_grafciasDefinidas()
-        generarReporte_incidenciaDeOperaciones()
+        if(this.reporteOperaciones.isNotEmpty()){
+            generarReporte_incidenciaDeOperaciones()
+        }
     }
 
-    private fun generarReporte_grafciasDefinidas(){
+    private fun generarReporte_grafciasDefinidas(){//este siempre existirá, pues de no ser así no se exe algo xD
         addSeparador("Gráficas Definidas")
 
-        for (elemento in (this.reporteGraficasDefinidas.indices)+1){
+        for (elemento in 0 until (this.reporteGraficasDefinidas.size +1)){
             val fila:TableRow = LayoutInflater.from(context).inflate(R.layout.table_row, null, false) as TableRow
             val numeroReporte:TextView = TextView(context)
             val tipoGrafica:TextView = TextView(context)
@@ -92,12 +94,12 @@ class ReportesFragment() : Fragment() {
 
             if(elemento > 0){
                 numeroReporte.text = elemento.toString()
-                tipoGrafica.text = (if(elemento == 0) "Barras" else "Pie")
-                numeroDefiniciones.text = this.reporteGraficasDefinidas[elemento].toString()
+                tipoGrafica.text = (if(elemento == 1) "Barras" else "Pie")
+                numeroDefiniciones.text = this.reporteGraficasDefinidas[elemento-1].toString()
             }else{//columnas
                 numeroReporte.text = "No."
                 tipoGrafica.text = "Tipo de gráfica"
-                numeroDefiniciones.text = "Numero de definiciones"
+                numeroDefiniciones.text = "Veces definida"
             }
 
             fila.addView(numeroReporte)
@@ -111,45 +113,40 @@ class ReportesFragment() : Fragment() {
     private fun generarReporte_incidenciaDeOperaciones(){
         addSeparador("Operaciones Ariteméticas")
 
-        val fila:TableRow = LayoutInflater.from(context).inflate(R.layout.table_row, null, false) as TableRow
-        val tipoReporte:TextView = TextView(context)
-        tipoReporte.text = "Errores"
+        if(this.reporteOperaciones.isNotEmpty()){//puesto que no necesariamente debe existir, depende del user xD
+            for (elemento in 0 until (this.reporteOperaciones.size +1)){
+                val fila:TableRow = LayoutInflater.from(context).inflate(R.layout.table_row, null, false) as TableRow
+                val linea:TextView = TextView(context)
+                val columna:TextView = TextView(context)
+                val tipoOperacion:TextView = TextView(context)
+                val contexto:TextView = TextView(context)
 
-        fila.addView(tipoReporte)
-        tableLayout.addView(fila)
+                if(elemento > 0){
+                    linea.text = this.reporteOperaciones.get(elemento-1).linea.toString()
+                    columna.text = this.reporteOperaciones.get(elemento-1).columna.toString()
+                    tipoOperacion.text = this.reporteOperaciones.get(elemento-1).lexema
+                    contexto.text = this.reporteOperaciones.get(elemento-1).descripcion
+                }else{
+                    linea.text = "Línea"
+                    columna.text = "Columna"
+                    tipoOperacion.text = "Operación"
+                    contexto.text = "Ocurrencia"
+                }
 
-        for (elemento in (this.reporteOperaciones.indices) +1){
-            val fila:TableRow = LayoutInflater.from(context).inflate(R.layout.table_row, null, false) as TableRow
-            val linea:TextView = TextView(context)
-            val columna:TextView = TextView(context)
-            val tipoOperacion:TextView = TextView(context)
-            val contexto:TextView = TextView(context)
+                fila.addView(linea)
+                fila.addView(columna)
+                fila.addView(tipoOperacion)
+                fila.addView(contexto)
 
-            if(elemento > 0){
-                linea.text = this.reporteOperaciones.get(elemento).linea.toString()
-                columna.text = this.reporteOperaciones.get(elemento).columna.toString()
-                tipoOperacion.text = this.reporteOperaciones.get(elemento).lexema
-                contexto.text = this.reporteOperaciones.get(elemento).descripcion
-            }else{
-                linea.text = "Línea"
-                columna.text = "Columna"
-                tipoOperacion.text = "Operación"
-                contexto.text = "Ocurrencia"
+                tableLayout.addView(fila)
             }
-
-            fila.addView(linea)
-            fila.addView(columna)
-            fila.addView(tipoOperacion)
-            fila.addView(contexto)
-
-            tableLayout.addView(fila)
         }
     }
 
     private fun generarReportes_Errores(){
         addSeparador("Errores")
 
-        for (elemento in (this.errores.indices) +1){
+        for (elemento in 0 until (this.errores.size+1)){
             val fila:TableRow = LayoutInflater.from(context).inflate(R.layout.table_row, null, false) as TableRow
             val linea:TextView = TextView(context)
             val columna:TextView = TextView(context)
@@ -157,12 +154,12 @@ class ReportesFragment() : Fragment() {
             val error:TextView = TextView(context)
             val descripcion:TextView = TextView(context)
 
-            if(elemento > 0){
-                linea.text = this.errores.get(elemento).linea.toString()
-                columna.text = this.errores.get(elemento).columna.toString()
-                tipoError.text = this.errores.get(elemento).tipo
-                error.text = this.errores.get(elemento).lexema
-                descripcion.text = this.errores.get(elemento).descripcion
+            if(elemento > 0){//no olvides restarle 1 al índice xD
+                linea.text = this.errores.get(elemento-1).linea.toString()
+                columna.text = this.errores.get(elemento-1).columna.toString()
+                tipoError.text = this.errores.get(elemento-1).tipo
+                error.text = this.errores.get(elemento-1).lexema
+                descripcion.text = this.errores.get(elemento-1).descripcion
             }else{
                 linea.text = "Línea"
                 columna.text = "Columna"

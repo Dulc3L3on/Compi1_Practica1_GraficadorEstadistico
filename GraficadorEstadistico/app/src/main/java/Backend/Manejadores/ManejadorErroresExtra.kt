@@ -44,7 +44,7 @@ class ManejadorErroresExtra(manejadorReportes: ManejadorReportes){
 
     //empleado en el ManejadorGraficacion xD
     fun verificarSeccionEjecucion(tituloGrafica: Atributo):Boolean{
-        if(this.analizadorSemantico.getTitulosRegistrados().isEmpty() && !this.yaSeRegistroInexistenciaSeccion1){//así solo se mostrará un único error xD
+        if(this.analizadorSemantico.getTitulosRegistrados().isEmpty() && !this.yaSeRegistroInexistenciaSeccion1){//así solo se mostrará una vez este error xD
             this.manejadorReportes.reportarError(ReporteError("Sección Ejecución",
                 -1,-1, "Semántico", ReporteError.SEMANTIC_NO_SECTION_GRAPH_DEFINED))
             this.yaSeRegistroInexistenciaSeccion1 = true

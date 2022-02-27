@@ -78,7 +78,7 @@ action code{://este código no es accesible desde el proyecto xD
         String lista = "";
 
         for(int idActual = 0; idActual < tokensAMostrar; idActual++){
-            lista += symbl_name_from_id(expected.get(idActual));
+            lista += symbl_name_from_id(expected.get(idActual)) + " ";
         }
         return lista;
     }   
@@ -200,7 +200,8 @@ atribGeneral ::= TITULO:representante DOS_PUNTOS CADENA:contenido               
               /*Ó -> se esperaba "atributo : contenido"*//*si escoges esto sería bueno que incluyeras tb lo de arriba, por los demás tipos de atrib...*/
               ;
 
-tupla ::= tupla COMA LLAVE_A valNumerico COMA valNumerico LLAVE_C
+tupla ::= tupla COMA LLAVE_A:repTupla valNumerico:valorX COMA valNumerico:valorY LLAVE_C      {:tuplas.add(new double[]{valorX, valorY});
+                                                                                                listaLineas.add(repTupla.getLeft()); listaColumnas.add(repTupla.getRight());:}//debe tb colocarse en la que tiene la recursi, sino no se add el último elemento, puesto que aparece directamente aquí... si fuera una llamada a una RP, ahí si solo tendría que colocarse la axn en esa RP, sea que apareciera sola en la RP que la invoca, o al final, asó como sucede con las 2 RP de este NT que las posee xD
        |  LLAVE_A:repTupla valNumerico:valorX COMA valNumerico:valorY LLAVE_C                 {:tuplas.add(new double[]{valorX, valorY});
                                                                                                 listaLineas.add(repTupla.getLeft()); listaColumnas.add(repTupla.getRight());:}//quedamos que para las ubic del contenido del listado de tuplas, se iba a enviar la ubic del {, con el fin de hacer referencia a la tupla completa y no a cada uno de los elementos de la pareja... pero si hay error, creo que ahí si se formaría un revoltijo xD xD, porque podría suceder que la axn de la tupla que contenía el error, nunca se exe.... bueno si eso sucede tampoco sería add la tupla a la lista, entonces así no habría problema xD, pero si que lo habría si el { no apareciera...
        |  error:err COMA/*si no da err se quedará, else LLAVE_A, aunque se salte una tupla*/  {:System.out.println(ReporteError.SEMANTIC_BAD_COUPLE);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_COUPLE, "Semántico", errleft, errright)));:}
@@ -251,14 +252,15 @@ elTipo ::= CANTIDAD:contenido                                                   
         /*[se esperaba cantidad o porcentaje]*/
         ;
 
-listaCadenas ::= listaCadenas COMA CADENA                                      //no hay pena de hacer así directo un casteo, puesto que el dato que envías o es String o es Double y como tú estas asignando los arr entonces... xD
+listaCadenas ::= listaCadenas COMA CADENA:cadena                             {:listaCadenas.add((String) cadena.getValue());:}//no hay pena de hacer así directo un casteo, puesto que el dato que envías o es String o es Double y como tú estas asignando los arr entonces... xD
               |  CADENA:cadena                                               {:listaCadenas.add((String) cadena.getValue());:}//se setea el dato, la fila y col no se setearán porque no se requieren, ya que no buscaras que los ele en los catálogos sean únicos...
               |  error:err                                                   {:System.out.println(ReporteError.SEMANTIC_BAD_STRING_LIST_STRUCT + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_STRING_LIST_STRUCT + concatExpected(), "Semántico", errleft, errright)));:}
               /*formato de lista de cadenas inválido*/
               /*se esperaba una lista de 1 o más cadenas*/              
               ;
 
-listaNumeros ::= listaNumeros COMA valNumerico
+listaNumeros ::= listaNumeros COMA valNumerico:valor                         {:listaNumeros.add(valor);
+                                                                              listaLineas.add(filaContenido); listaColumnas.add(columnaContenido);:}
               |  valNumerico:valor                                           {:listaNumeros.add(valor);
                                                                                listaLineas.add(filaContenido); listaColumnas.add(columnaContenido);:}//se setea el dato y tb debería setearse la fila y col que se almacenaron en las var individuales que se llenaron en las prod de operaciones...
               |  error:err COMA/*formato de lista de vals# inválido*/        {:System.out.println(ReporteError.SEMANTIC_BAD_NUMBER_EXPRESION + concatExpected());manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_BAD_NUMBER_EXPRESION + concatExpected(), "Semántico", errleft, errright)));:}
