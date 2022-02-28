@@ -363,10 +363,10 @@ public class Lexer implements java_cup.runtime.Scanner {
         return symbol(((yytext().equals(":"))?DOS_PUNTOS:((yytext().equals(","))?COMA:((yytext().equals("{"))?LLAVE_A:((yytext().equals("}"))?LLAVE_C:((yytext().equals(";"))?PUNTO_COMA:((yytext().equals("["))?CORCHETE_A:CORCHETE_C)))))), yytext(), false);                 
     }//por si acaso miras que si te es posible add SA a ERROR sin generar problemas al formar los tokens aquí y analizar las RP en el parser
 
-    private int establecerMenosOResta(){
+    /*private int establecerMenosOResta(){
         System.out.println("[L] simbolo ->"+ yytext());
         return (simboloAnterior != null && simboloAnterior.getSym() != NUMERO)?MENOS:RESTA;//porque si aparece un número antes, entonces será 
-    }
+    }*/
 
     private void accionProcesarError(){
         if(yystate() != ERROR){//no coloco tb a CADENA, porque se supone que no debería hacer match con el [^] cuando esté dentro de ese estado léxico...
@@ -811,7 +811,7 @@ public class Lexer implements java_cup.runtime.Scanner {
             // fall through
           case 32: break;
           case 4:
-            { System.out.println("[L] simbolo-> "+ yytext());return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?establecerMenosOResta():((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);
+            { System.out.println("[L] simbolo-> "+ yytext());return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?RESTA:((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);
             }
             // fall through
           case 33: break;

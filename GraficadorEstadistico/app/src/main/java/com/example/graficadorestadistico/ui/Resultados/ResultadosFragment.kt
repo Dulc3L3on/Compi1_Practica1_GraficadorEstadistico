@@ -28,7 +28,7 @@ import androidx.core.view.size
 
 class ResultadosFragment:Fragment() {
     private lateinit var linearLayout:LinearLayout
-    private var tvw_msje:TextView? = null
+    //private var tvw_msje:TextView? = null
 
     private var hubieronErrores:Boolean = true
     private lateinit var graficas:ArrayList<Grafica>
@@ -52,12 +52,12 @@ class ResultadosFragment:Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         this.linearLayout = view.findViewById(R.id.linearLayout_Resultados)
-        this.linearLayout.removeAllViewsInLayout()//si da error add un if linearLayout.getChildCount()>0 y cblo por un removeAllViews, si el InLayout xd
-        if(this.tvw_msje!= null && (this.tvw_msje as TextView).parent != null){
-            ((this.tvw_msje as TextView).parent as ViewGroup).removeView(this.tvw_msje)
-        }
+      //  this.linearLayout.removeAllViews()//si da error add un if linearLayout.getChildCount()>0 y cblo por un removeAllViews, si el InLayout xd
+        /*if(this.tvw_msje!= null && (this.tvw_msje as TextView).parent != null){
+            ((this.tvw_msje!!).parent as ViewGroup).removeView(this.tvw_msje)
+        }*/
 
-        this.tvw_msje = TextView(context)
+        //this.tvw_msje = TextView(context)
 
     }
 
@@ -76,8 +76,9 @@ class ResultadosFragment:Fragment() {
                 pasarInformacion_Reportes((bundle.getSerializable("reporteGraficasDefinidas") as IntArray),
                     (bundle.getSerializable("reporteOperaciones") as ArrayList<Reporte>))//yo diría que aquí, pues en este punto ya habrá terminado all o que debe hacer este fragment...
             }else{
-                this.tvw_msje?.text = "Nada que graficar"
-                this.linearLayout.addView(this.tvw_msje)
+                var tvw_msje = TextView(context)
+                tvw_msje.text = "Nada que graficar"
+                this.linearLayout.addView(tvw_msje)
                 pasarInformacionErrados((bundle.getSerializable("reporteErrores") as ArrayList<ReporteError>))
             }
 

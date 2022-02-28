@@ -68,10 +68,10 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
         return symbol(((yytext().equals(":"))?DOS_PUNTOS:((yytext().equals(","))?COMA:((yytext().equals("{"))?LLAVE_A:((yytext().equals("}"))?LLAVE_C:((yytext().equals(";"))?PUNTO_COMA:((yytext().equals("["))?CORCHETE_A:CORCHETE_C)))))), yytext(), false);                 
     }//por si acaso miras que si te es posible add SA a ERROR sin generar problemas al formar los tokens aquí y analizar las RP en el parser
 
-    private int establecerMenosOResta(){
+    /*private int establecerMenosOResta(){
         System.out.println("[L] simbolo ->"+ yytext());
         return (simboloAnterior != null && simboloAnterior.getSym() != NUMERO)?MENOS:RESTA;//porque si aparece un número antes, entonces será 
-    }
+    }*/
 
     private void accionProcesarError(){
         if(yystate() != ERROR){//no coloco tb a CADENA, porque se supone que no debería hacer match con el [^] cuando esté dentro de ese estado léxico...
@@ -124,7 +124,7 @@ comentario = "#" {cuerpoComentario}* {finDeLinea}?//puesto que puede venir al fi
 
     {numero}               {System.out.println("[L] numero ->"+ yytext());return symbol(NUMERO, new Double(yytext()), false);}//si hay problemas al enviar un DOuble, cuando el número sea un Int, entonces envía un String y allá loconvertirás a DOuble, no creo que de problema si no tiene ese String un punto decimal...
 
-    {operadores}           {System.out.println("[L] simbolo-> "+ yytext());return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?establecerMenosOResta():((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);}
+    {operadores}           {System.out.println("[L] simbolo-> "+ yytext());return symbol(((yytext().equals("+"))?SUMA:((yytext().equals("-"))?RESTA:((yytext().equals("*"))?MULTI:((yytext().equals("/"))?DIV:((yytext().equals("("))?PARENTESIS_A:PARENTESIS_C))))), yytext(), true);}
 
     \"                     {string.setLength(0); yybegin(STRING);}//tengo que hacer que la entrada se convierta a un tipo específico, sino podría detectar como errónea la codificación de un caracter equivalente en otro "sistema" o modo de codificación, como sucedió con las comillas            
 
