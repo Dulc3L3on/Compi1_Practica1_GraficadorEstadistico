@@ -10,8 +10,12 @@ class ReporteError(lexema: String, linea: Int, columna: Int, tipo:String, descri
         const val LEXER_MAYBE_YOU_MEANT = "quizá quisiste decir "
 
         //Errores revisados internamente
+        //Generales
+        const val SEMANTIC_FATAL_ERROR = "imposible continuar con el análisis"
+        const val SEMANTIC_PARSER_EXPECTED = "se esperaba "
+        const val SEMANTIC_SYNTAX_ERROR = "sintaxis incorrecta, se esperaba: "
+        const val SEMANTIC_UNRECOVERED_SYNTAX_ERROR = "imposible de entender la estructura establecida"
         //Definición gráficas
-        const val SEMANTIC_FATAL_ERROR = "Imposible entender la estructura establecida"
         const val SEMANTIC_MISSING_ATTRIBUTE = "no se definió para la gráfica en #línea "// la incexistencia de TOTAL irá aquí?... sino entonces este no es error SEMANTIC sino PARSER
         //sería genial numerar las estructuras de definición de gráficas y tb las de exe, así sería más eficaz el msje que da el # de definición...
         //sino tb podrías decir "el título ya nombra una gráfica"/o "el título ya ha sido def en una gráfica/"este título ya ha sido utilizado" xD"
@@ -29,7 +33,6 @@ class ReporteError(lexema: String, linea: Int, columna: Int, tipo:String, descri
         const val SEMANTIC_NO_SECTION_GRAPH_DEFINED = "no hay gráficas definidas para ejecutar"
         const val SEMANTIC_NO_GRAPH_DEFINED = "no existe una gráfica con ese título"
         //Errores catheados por la gramática
-        const val PARSER_EXPECTED = "se esperaba "
         const val SEMANTIC_ERROR_SECTION_STRUCT = "estructura de sección incorrecta, se esperaba: "
   /*_*/ const val SEMANTIC_EXPECTED_DEF = "faltó instrucción \"Def\" o \"def\""
         const val SEMANTIC_BAD_DEFINITION_STRUCT = "estructura de definición inválida, se esperaba: "

@@ -64,7 +64,7 @@ action code{://este código no es accesible desde el proyecto xD
             return new Reporte(simbolo.getValue().toString(), simbolo.getLeft(), simbolo.getRight(), descripcion);//el toString() lo puedo usar libremente puesto que el valor o es un String o un Double no más xD
         }else{
             if(simbolo == null){//quiere decir que no existe el T que se esperaba
-                return new ReporteError(concatExpected(), lineaError, columnaError, tipo, ReporteError.PARSER_EXPECTED);
+                return new ReporteError(concatExpected(), lineaError, columnaError, tipo, ReporteError.SEMANTIC_PARSER_EXPECTED);
             }else{
                 return new ReporteError(simbolo.getValue().toString(), simbolo.getLeft(), simbolo.getRight(), tipo, descripcion);
             }
@@ -126,6 +126,23 @@ parser code {://código que modifica el comportamiento del parser [sobreescribie
         manejadorReportes.reportarError((new ReporteError(info.toString(), -1, 
         -1, "Sintáctico", ReporteError.SEMANTIC_FATAL_ERROR)));
     }
+
+    /*public void syntax_error(Symbol cur_token){
+        if(cur_token!= null){
+            manejadorReportes.reportarError((new ReporteError(cur_token.value.toString(), cur_token.left,
+                    cur_token.right, "Sintáctico", ReporteError.SEMANTIC_SYNTAX_ERROR)));
+        }//es decir que mientras no haya sido por no cumplir la sintaxis completa... deplano que con el otro tendré que hacer lo mismo, o si no funciona, ahí si con puro simb de recu ser+a...
+    }//creo que por lo que veo en la docu, este y el unrecovered_se, siempre reciben un cur_token null...
+
+    public void unrecovered_syntax_error(Symbol cur_token){
+       if(cur_token!=null){
+            manejadorReportes.reportarError((new ReporteError(cur_token.value.toString(), cur_token.left,
+                    cur_token.right, "Sintáctico", ReporteError.SEMANTIC_UNRECOVERED_SYNTAX_ERROR)));    
+        }
+    }*///no voy a quitar este comentario porque al menos para la manera en que estabas trabajando con este proyecto, [yo supondría que tb con los demás] 
+    //al sobreescribirlos se evita que actúen como tiene previamente establecido y eso hace que no se invoque al fatal_error el cual al ver todo esto, es 
+    //el único que puede ser implementado y que resulta ser de mucha ayuda para que el parser no se detenga por un error fatal [cuando no entiende nadita de 
+    //la estructura] y en algunos syntax_error, imagino que en otros de este tipo no ayuda a evitarlos porque si requeire de los simb de recu... xD
     
     protected int error_sync_size(){
         return 1;
@@ -147,7 +164,7 @@ terminal Simbolo DEF, BARRAS, PIE, TITULO, EJEX, EJEY, ETIQUETAS, VALORES, UNIR,
 //3. no terminales
 non terminal inicio;
 non terminal primerseccion, definicion, grafico;
-non terminal cuerpoBarra, paramBarra, atribGeneral, tupla, atribBarra, cuerpoPie, paramPie, atribPie;
+non terminal cuerpoBarra, paramBarra, /*atribGeneral,*/ tupla, atribBarra, cuerpoPie, paramPie, atribPie;
 non terminal Simbolo elTipo;
 non terminal listaCadenas, listaNumeros;
 non terminal Double valNumerico;//yo digo que si lo puedo dejar Double, como de todos modos voy a hacer la conversión... y el dato de este se add a una lista que recibe valores Double, o [double[]] entonces no hay problema...
@@ -192,13 +209,13 @@ paramBarra ::= atribBarra PUNTO_COMA
             /*E -> falta ";"*//*lo de "se esperaba tal estructura no, a menos que no se pueda definir el error en la RP de atribGraficaCorresp*/
             ;
 
-atribGeneral ::= TITULO:representante DOS_PUNTOS CADENA:contenido                             {:System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}  
+/*atribGeneral ::= TITULO:representante DOS_PUNTOS CADENA:contenido                             {:System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}  
               |  UNIR:representante DOS_PUNTOS CORCHETE_A tupla CORCHETE_C                    {:mostrarContenidoTuplas();analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", representante));
-                                                                                                tuplas.clear();:}
+                                                                                                tuplas.clear();:}*/
               //--|  error:err                                                                    {:manejadorReportes.reportarError(crearReporte("error", err, ReporteError.SEMANTIC_BAD_ATRIB_GRAPHIC_STRUCT + concatExpected(), "Semántico"));:}
               /*E -> atributo de gráfica malformado*/
               /*Ó -> se esperaba "atributo : contenido"*//*si escoges esto sería bueno que incluyeras tb lo de arriba, por los demás tipos de atrib...*/
-              ;
+              /*;*/
 
 tupla ::= tupla COMA LLAVE_A:repTupla valNumerico:valorX COMA valNumerico:valorY LLAVE_C      {:tuplas.add(new double[]{valorX, valorY});
                                                                                                 listaLineas.add(repTupla.getLeft()); listaColumnas.add(repTupla.getRight());:}//debe tb colocarse en la que tiene la recursi, sino no se add el último elemento, puesto que aparece directamente aquí... si fuera una llamada a una RP, ahí si solo tendría que colocarse la axn en esa RP, sea que apareciera sola en la RP que la invoca, o al final, asó como sucede con las 2 RP de este NT que las posee xD
@@ -208,7 +225,9 @@ tupla ::= tupla COMA LLAVE_A:repTupla valNumerico:valorX COMA valNumerico:valorY
        /*para tupla se espera: { # , # }*/
        ;
 
-atribBarra ::= atribGeneral
+atribBarra ::= TITULO:representante DOS_PUNTOS CADENA:contenido                             {:System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}  
+            |  UNIR:representante DOS_PUNTOS CORCHETE_A tupla CORCHETE_C                    {:mostrarContenidoTuplas();analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", representante));
+                                                                                                tuplas.clear();:}
             |  EJEX:representante DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C               {:mostrarContenidoListasCadenas();analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", representante));
                                                                                                 listaCadenas.clear();:} 
             |  EJEY:representante DOS_PUNTOS CORCHETE_A listaNumeros CORCHETE_C               {:mostrarContenidoListasNumeros();analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", representante));
@@ -230,7 +249,9 @@ paramPie ::= atribPie PUNTO_COMA
           /*E -> falta ";" [porque lo de atributo malformado se informaría en las producciones de abajo*/
           ;
 
-atribPie ::= atribGeneral
+atribPie ::= TITULO:representante DOS_PUNTOS CADENA:contenido                             {:System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}  
+          |  UNIR:representante DOS_PUNTOS CORCHETE_A tupla CORCHETE_C                    {:mostrarContenidoTuplas();analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", representante));
+                                                                                                tuplas.clear();:}
           |  ETIQUETAS:representante DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C              {:mostrarContenidoListasCadenas();analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", representante));
                                                                                                   listaCadenas.clear();:}
           |  VALORES:representante DOS_PUNTOS CORCHETE_A listaNumeros CORCHETE_C                {:mostrarContenidoListasNumeros();analizadorSemantico.setAtributo(crearAtributo_Listas("numeros", representante));

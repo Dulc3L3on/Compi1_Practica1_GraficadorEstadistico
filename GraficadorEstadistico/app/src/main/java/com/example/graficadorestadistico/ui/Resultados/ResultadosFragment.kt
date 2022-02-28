@@ -52,6 +52,7 @@ class ResultadosFragment:Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         this.linearLayout = view.findViewById(R.id.linearLayout_Resultados)
+        this.linearLayout.removeAllViewsInLayout()//si da error add un if linearLayout.getChildCount()>0 y cblo por un removeAllViews, si el InLayout xd
         if(this.tvw_msje!= null && (this.tvw_msje as TextView).parent != null){
             ((this.tvw_msje as TextView).parent as ViewGroup).removeView(this.tvw_msje)
         }

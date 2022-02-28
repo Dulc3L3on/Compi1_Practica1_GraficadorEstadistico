@@ -78,23 +78,22 @@ public class ParserSym {
   };
 
   /* non terminals */
-  static final int atribBarra = 8;
-  static final int paramPie = 10;
-  static final int segundaSeccion = 16;
-  static final int atribPie = 11;
-  static final int valNumerico = 15;
-  static final int grafico = 3;
-  static final int elTipo = 12;
-  static final int paramBarra = 5;
+  static final int paramPie = 9;
+  static final int segundaSeccion = 15;
+  static final int cuerpoPie = 8;
+  static final int atribPie = 10;
+  static final int atribBarra = 7;
+  static final int listaCadenas = 12;
   static final int inicio = 0;
-  static final int listaNumeros = 14;
-  static final int cuerpoPie = 9;
-  static final int exe = 17;
-  static final int tupla = 7;
-  static final int listaCadenas = 13;
-  static final int definicion = 2;
-  static final int cuerpoBarra = 4;
-  static final int atribGeneral = 6;
   static final int primerseccion = 1;
+  static final int grafico = 3;
+  static final int paramBarra = 5;
+  static final int valNumerico = 14;
+  static final int definicion = 2;
+  static final int elTipo = 11;
+  static final int exe = 16;
+  static final int listaNumeros = 13;
+  static final int tupla = 6;
+  static final int cuerpoBarra = 4;
 }
 
