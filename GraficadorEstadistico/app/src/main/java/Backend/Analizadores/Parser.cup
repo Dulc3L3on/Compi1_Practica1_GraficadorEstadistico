@@ -225,8 +225,8 @@ tupla ::= tupla COMA LLAVE_A:repTupla valNumerico:valorX COMA valNumerico:valorY
        /*para tupla se espera: { # , # }*/
        ;
 
-atribBarra ::= TITULO:representante DOS_PUNTOS CADENA:contenido                             {:System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}  
-            |  UNIR:representante DOS_PUNTOS CORCHETE_A tupla CORCHETE_C                    {:mostrarContenidoTuplas();analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", representante));
+atribBarra ::= TITULO:representante DOS_PUNTOS CADENA:contenido                               {:System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}  
+            |  UNIR:representante DOS_PUNTOS CORCHETE_A tupla CORCHETE_C                      {:mostrarContenidoTuplas();analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", representante));
                                                                                                 tuplas.clear();:}
             |  EJEX:representante DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C               {:mostrarContenidoListasCadenas();analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", representante));
                                                                                                 listaCadenas.clear();:} 
@@ -249,8 +249,8 @@ paramPie ::= atribPie PUNTO_COMA
           /*E -> falta ";" [porque lo de atributo malformado se informaría en las producciones de abajo*/
           ;
 
-atribPie ::= TITULO:representante DOS_PUNTOS CADENA:contenido                             {:System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}  
-          |  UNIR:representante DOS_PUNTOS CORCHETE_A tupla CORCHETE_C                    {:mostrarContenidoTuplas();analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", representante));
+atribPie ::= TITULO:representante DOS_PUNTOS CADENA:contenido                                   {:System.out.println("[S] cadena (titulo): "+ contenido.getValue()); analizadorSemantico.setAtributo(crearAtributo_Simple("cadena", representante, contenido));:}  
+          |  UNIR:representante DOS_PUNTOS CORCHETE_A tupla CORCHETE_C                          {:mostrarContenidoTuplas();analizadorSemantico.setAtributo(crearAtributo_Listas("tuplas", representante));
                                                                                                 tuplas.clear();:}
           |  ETIQUETAS:representante DOS_PUNTOS CORCHETE_A listaCadenas CORCHETE_C              {:mostrarContenidoListasCadenas();analizadorSemantico.setAtributo(crearAtributo_Listas("cadenas", representante));
                                                                                                   listaCadenas.clear();:}
@@ -269,7 +269,7 @@ atribPie ::= TITULO:representante DOS_PUNTOS CADENA:contenido                   
 
 elTipo ::= CANTIDAD:contenido                                                                   {:RESULT = contenido;:}//si no funciona, por no haberle asignado un tipo a cdad y %, entoncs vamos a crear una var...
         |  PORCENTAJE:contenido                                                                 {:RESULT = contenido;:}
-        |  error:err/*E -> tipo de total inválido */                                            {:System.out.println(ReporteError.SEMANTIC_INVALID_TOTAL_TYPE);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_INVALID_TOTAL_TYPE, "Semántico", errleft, errright)));:}
+        |  error:err PUNTO_COMA/*E -> tipo de total inválido */                                 {:System.out.println(ReporteError.SEMANTIC_INVALID_TOTAL_TYPE);manejadorReportes.reportarError((ReporteError) (crearReporte("error", (Simbolo) err, ReporteError.SEMANTIC_INVALID_TOTAL_TYPE, "Semántico", errleft, errright)));:}
         /*[se esperaba cantidad o porcentaje]*/
         ;
 

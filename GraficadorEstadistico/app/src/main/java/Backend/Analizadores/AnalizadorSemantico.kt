@@ -6,6 +6,7 @@ import Backend.Objetos.Auxiliares.Atributos.Contenido.*
 import Backend.Objetos.Auxiliares.Simbolo
 import Backend.Objetos.Auxiliares.TablaDeSimbolos
 import Backend.Objetos.Reportes.ReporteError
+import android.util.Log
 import kotlin.math.abs
 
 class AnalizadorSemantico(manejadorReportes: ManejadorReportes) {
@@ -156,8 +157,11 @@ class AnalizadorSemantico(manejadorReportes: ManejadorReportes) {
                     "tipo" -> tipo = (this.tablaDeSimbolos.getAtributoHallado().contenido as ContenidoCadena).cadena
                 }
             }
-            verificarExistenciaTotal(tipo, tuplas)
         }
+        Log.i("contenido TIPO -> ", tipo)
+        Log.i("contenido ETI -> ", etiquetas.toString())
+        Log.i("contenido VAL -> ", valores.toString())//con que se imprima la dir, me informará que no es null...
+        verificarExistenciaTotal(tipo, tuplas)//claramente debe ir aquí fuera, pues en este punto ya se han evaluado todos xD :v
     }//Listo
 
     private fun buscarNegativos_AtribsPie(elementos:ContenidoListaNumeros):DoubleArray{//tb aplicacría para ejeY si no se admiten vals (-) para formar barras xD
@@ -174,21 +178,23 @@ class AnalizadorSemantico(manejadorReportes: ManejadorReportes) {
     }//Listo
 
     private fun verificarExistenciaTotal(tipo:String, tuplas:Atributo?){
-        this.tablaDeSimbolos.existeAtributo("total")
-        val atributoTotal:Atributo? = this.tablaDeSimbolos.getAtributoHallado()
+        val valorExistencia = this.tablaDeSimbolos.existeAtributo("total")
 
-        if(tipo == "Porcentaje" && (atributoTotal != null)){
+        Log.i("existencia TOTAL -> ", valorExistencia.toString())
+        if(tipo == "Porcentaje" && (valorExistencia > 0)){
+            var atributoTotal:Atributo = this.tablaDeSimbolos.getAtributoHallado()
+
             this.manejadorReportes.reportarError(ReporteError("total",
                 (atributoTotal.simbolo.left),
                 (atributoTotal.simbolo.right),//puesto que en sí es la def del atrib y puesto que "total" rep a all él, entonces la línea y col deben ser las de él xD
                 "Semántico", (ReporteError.SEMANTIC_UNNECESSARY_TOTAL)))
-        }else if(tipo == "Cantidad" && (atributoTotal == null)){
+        }else if(tipo == "Cantidad" && (valorExistencia == 0)){
             this.manejadorReportes.reportarError(ReporteError("total",
                 -1,-1, "Semántico",(ReporteError.SEMANTIC_NECESSARY_TOTAL +
                         this.tablaDeSimbolos.getLineaDefinicionGrafica())))
         }else{//si entra aquí quiere decir que si existe total es porque tipo = Cdad y si no es porque tipo = %
-            verificarCorrespondenciaTotal(tipo, (if(atributoTotal == null) 100.0
-            else (atributoTotal.contenido as ContenidoNumero).numero), tuplas)
+            verificarCorrespondenciaTotal(tipo, (if(valorExistencia == 0) 100.0
+            else (this.tablaDeSimbolos.getAtributoHallado()!!.contenido as ContenidoNumero).numero), tuplas)//puedo asegurar que no será null por la revisión previa
         }
     }//Listo
 

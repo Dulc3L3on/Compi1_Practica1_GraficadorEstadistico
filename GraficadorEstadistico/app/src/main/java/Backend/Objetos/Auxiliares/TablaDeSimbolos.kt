@@ -55,7 +55,7 @@ class TablaDeSimbolos {
                 vecesHallado++
                 if(vecesHallado==1){
                     atributoHallado = atributo//solo la 1er aparición porque para qué voy a estar app las demás verificaciones si en primer lugar todos los datos extra tendrá que eliminarlos...
-                }
+                }//pero no paro porque debo recopilar el # de apariciones, aunque creo que por la lógica que estas usando bastaría con llegar a dos...
             }
         }
         return vecesHallado
@@ -63,7 +63,7 @@ class TablaDeSimbolos {
 
     fun getAtributoHallado():Atributo{
         return atributoHallado!!
-    }//se va a invocar cuando se sepa que esto no es null xD [es decir cuando se halló xD]
+    }//puesto que cuando se utilice, está asegurado  [por la revisión del #apariciones] que el valor hallado no fue null xD
 
     //no es necesario colocar estos métodos, pero para que no olvides qué cosas deberías poder hacer con ellos xD
     fun getTipoGrafica():String{
